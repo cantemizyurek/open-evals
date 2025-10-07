@@ -1,10 +1,10 @@
 import type { Relationship } from '../types'
 import { GraphNode } from './node'
 
-export class KnowledgeGraph {
-  private nodes: Map<string, GraphNode> = new Map()
+export class KnowledgeGraph<T extends object = {}> {
+  private nodes: Map<string, GraphNode<T>> = new Map()
 
-  addNode(node: GraphNode): void {
+  addNode(node: GraphNode<T>): void {
     this.nodes.set(node.id, node)
   }
 
@@ -50,13 +50,13 @@ export class KnowledgeGraph {
     return Array.from(sourceNode.relationships.values())
   }
 
-  getNeighbors(id: string, type?: Relationship['type']): GraphNode[] {
+  getNeighbors(id: string, type?: Relationship['type']): GraphNode<T>[] {
     const node = this.getNode(id)
     if (!node) {
       throw new Error(`Source node ${id} not found`)
     }
 
-    const neighbors: GraphNode[] = []
+    const neighbors: GraphNode<T>[] = []
 
     for (const [neighborId, relationship] of node.relationships) {
       if (type && relationship.type !== type) {
@@ -70,19 +70,19 @@ export class KnowledgeGraph {
     return neighbors
   }
 
-  getNodesByType(type: GraphNode['type']): GraphNode[] {
+  getNodesByType(type: GraphNode<T>['type']): GraphNode<T>[] {
     return Array.from(this.nodes.values()).filter((node) => node.type === type)
   }
 
-  getNodesBy(callback: (node: GraphNode) => boolean): GraphNode[] {
+  getNodesBy(callback: (node: GraphNode<T>) => boolean): GraphNode<T>[] {
     return Array.from(this.nodes.values()).filter(callback)
   }
 
-  getNodes(): GraphNode[] {
+  getNodes(): GraphNode<T>[] {
     return Array.from(this.nodes.values())
   }
 
-  getNode(id: string): GraphNode | undefined {
+  getNode(id: string): GraphNode<T> | undefined {
     return this.nodes.get(id)
   }
 
@@ -90,7 +90,7 @@ export class KnowledgeGraph {
     return this.nodes.has(id)
   }
 
-  *traverse(id: string, maxDepth: number = Infinity): Generator<GraphNode> {
+  *traverse(id: string, maxDepth: number = Infinity): Generator<GraphNode<T>> {
     const visited = new Set<string>()
     const queue: [string, number][] = [[id, 0]]
 
@@ -120,13 +120,13 @@ export class KnowledgeGraph {
     }
   }
 
-  static fromJSON(json: Record<string, unknown>): KnowledgeGraph {
-    const graph = new KnowledgeGraph()
+  static fromJSON<T extends object = {}>(json: Record<string, unknown>): KnowledgeGraph<T> {
+    const graph = new KnowledgeGraph<T>()
 
     if (json.nodes && Array.isArray(json.nodes)) {
       for (const nodeData of json.nodes) {
         if (typeof nodeData === 'object' && nodeData !== null) {
-          const node = GraphNode.fromJSON(nodeData as Record<string, unknown>)
+          const node = GraphNode.fromJSON<T>(nodeData as Record<string, unknown>)
           graph.addNode(node)
         }
       }

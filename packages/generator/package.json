@@ -19,5 +19,8 @@
   },
   "devDependencies": {
     "tsdown": "latest"
+  },
+  "dependencies": {
+    "ai": "^5.0.60"
   }
 }
