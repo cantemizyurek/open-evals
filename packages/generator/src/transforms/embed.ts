@@ -10,11 +10,11 @@ export type Embedding = number[]
  *
  * @param model - The embedding model to use
  */
-export function embedding<T extends object>(
+export function embed<T extends object>(
   model: EmbeddingModel
 ): Transform<T, T & { embeddings?: Embedding }> {
   return {
-    name: 'embedding',
+    name: 'embed',
     description: 'Embed the nodes in the graph',
     async apply(
       graph: KnowledgeGraph<T>
