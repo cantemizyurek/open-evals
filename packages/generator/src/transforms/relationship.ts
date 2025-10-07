@@ -3,6 +3,13 @@ import type { KnowledgeGraph } from '../graph/knowledge-graph'
 import type { Transform } from '../types'
 import type { Embedding } from './embedding'
 
+/**
+ * Build relationships between the nodes in the graph
+ * based on cosine similarity of their embeddings.
+ * Nodes without embeddings are skipped.
+ *
+ * @param threshold - The threshold for the similarity score
+ */
 export function relationship<T extends object>(
   threshold: number = 0.7
 ): Transform<T & { embeddings?: Embedding }, T & { embeddings?: Embedding }> {

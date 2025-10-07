@@ -21,6 +21,7 @@
     "tsdown": "latest"
   },
   "dependencies": {
-    "ai": "^5.0.60"
+    "ai": "^5.0.60",
+    "@ai-sdk-eval/rag": "workspace:*"
   }
 }

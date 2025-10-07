@@ -23,6 +23,9 @@ importers:
 
   packages/generator:
     dependencies:
+      '@ai-sdk-eval/rag':
+        specifier: workspace:*
+        version: link:../rag
       ai:
         specifier: ^5.0.60
         version: 5.0.60(zod@4.1.12)
