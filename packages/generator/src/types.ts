@@ -3,6 +3,7 @@ import type { KnowledgeGraph } from './graph/knowledge-graph'
 export type Relationship =
   | { type: 'similarity'; score: number }
   | { type: 'hierarchy'; role: 'parent' | 'child' }
+  | { type: 'entity'; role: 'related' }
 
 export interface Transform<
   TInputMeta extends object,
