@@ -1,7 +1,7 @@
 import { cosineSimilarity } from 'ai'
 import type { KnowledgeGraph } from '../graph/knowledge-graph'
 import type { Transform } from '../types'
-import type { Embedding } from './embedding'
+import type { Embedding } from './embed'
 
 /**
  * Build relationships between the nodes in the graph

@@ -7,7 +7,7 @@ export { GraphNode, DocumentNode, ChunkNode } from './graph/node'
 
 // Transforms
 export { chunk } from './transforms/chunk'
-export { embedding, type Embedding } from './transforms/embedding'
+export { embed, type Embedding } from './transforms/embed'
 export { relationship } from './transforms/relationship'
 export { tap } from './transforms/tap'
 export { transform } from './transforms/utils'
