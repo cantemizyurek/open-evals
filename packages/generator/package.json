@@ -18,10 +18,12 @@
     "dev": "tsdown --watch"
   },
   "devDependencies": {
+    "@ai-sdk/openai": "^2.0.44",
+    "@types/node": "^24.7.0",
+    "ai": "^5.0.60",
     "tsdown": "latest"
   },
   "dependencies": {
-    "ai": "^5.0.60",
     "@ai-sdk-eval/rag": "workspace:*"
   }
 }
