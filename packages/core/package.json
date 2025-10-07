@@ -1,0 +1,31 @@
+{
+  "name": "@ai-sdk-eval/core",
+  "version": "0.0.0",
+  "private": true,
+  "description": "",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "tsdown": "latest",
+    "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "ai": "^5.0.60"
+  }
+}
