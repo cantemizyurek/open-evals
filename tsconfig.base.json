@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    // Type checking
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
+
+    // Module resolution
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+
+    // Output
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "removeComments": false,
+    "newLine": "lf",
+
+    // Language features
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+
+    // Interop constraints
+    "isolatedModules": true,
+    "allowImportingTsExtensions": false,
+    "forceConsistentCasingInFileNames": true,
+
+    // Performance
+    "skipLibCheck": true,
+    "incremental": true,
+
+    // Project references
+    "composite": true
+  },
+  "exclude": ["node_modules", "dist", "build", "coverage"]
+}
