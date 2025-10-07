@@ -36,6 +36,9 @@ importers:
       ai:
         specifier: ^5.0.60
         version: 5.0.60(zod@4.1.12)
+      dotenv:
+        specifier: ^17.2.3
+        version: 17.2.3
       tsdown:
         specifier: latest
         version: 0.15.6
@@ -585,6 +588,10 @@ packages:
   diff@8.0.2:
     resolution: {integrity: sha512-sSuxWU5j5SR9QQji/o2qMvqRNYRDOcBTgsJ/DeCf4iSN4gW+gNMXM7wFIP+fdXZxoNiAnHUTGjCr+TSWXdRDKg==}
     engines: {node: '>=0.3.1'}
+
+  dotenv@17.2.3:
+    resolution: {integrity: sha512-JVUnt+DUIzu87TABbhPmNfVdBDt18BLOWjMUFJMSi/Qqg7NTYtabbvSNJGOJ7afbRuv9D/lngizHtP7QyLQ+9w==}
+    engines: {node: '>=12'}
 
   dts-resolver@2.1.2:
     resolution: {integrity: sha512-xeXHBQkn2ISSXxbJWD828PFjtyg+/UrMDo7W4Ffcs7+YWCquxU8YjV1KoxuiL+eJ5pg3ll+bC6flVv61L3LKZg==}
@@ -1275,6 +1282,8 @@ snapshots:
   defu@6.1.4: {}
 
   diff@8.0.2: {}
+
+  dotenv@17.2.3: {}
 
   dts-resolver@2.1.2: {}
 
