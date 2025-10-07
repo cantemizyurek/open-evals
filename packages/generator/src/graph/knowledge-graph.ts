@@ -1,6 +1,16 @@
 import type { Relationship } from '../types'
 import { GraphNode } from './node'
 
+export function graph<T extends object = {}>(
+  nodes?: GraphNode<T>[]
+): KnowledgeGraph<T> {
+  const graph = new KnowledgeGraph<T>()
+  for (const node of nodes || []) {
+    graph.addNode(node)
+  }
+  return graph
+}
+
 export class KnowledgeGraph<T extends object = {}> {
   private nodes: Map<string, GraphNode<T>> = new Map()
 
@@ -120,13 +130,17 @@ export class KnowledgeGraph<T extends object = {}> {
     }
   }
 
-  static fromJSON<T extends object = {}>(json: Record<string, unknown>): KnowledgeGraph<T> {
+  static fromJSON<T extends object = {}>(
+    json: Record<string, unknown>
+  ): KnowledgeGraph<T> {
     const graph = new KnowledgeGraph<T>()
 
     if (json.nodes && Array.isArray(json.nodes)) {
       for (const nodeData of json.nodes) {
         if (typeof nodeData === 'object' && nodeData !== null) {
-          const node = GraphNode.fromJSON<T>(nodeData as Record<string, unknown>)
+          const node = GraphNode.fromJSON<T>(
+            nodeData as Record<string, unknown>
+          )
           graph.addNode(node)
         }
       }
