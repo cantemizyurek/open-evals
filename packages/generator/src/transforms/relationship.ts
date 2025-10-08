@@ -6,19 +6,17 @@ import type { Embedding } from './embed'
 /**
  * Build relationships between the nodes in the graph
  * based on cosine similarity of their embeddings.
- * Nodes without embeddings are skipped.
+ * Chunk nodes without embeddings are skipped.
  *
  * @param threshold - The threshold for the similarity score
  */
-export function relationship<T extends object>(
+export function relationship<T extends { embeddings?: Embedding }>(
   threshold: number = 0.7
-): Transform<T & { embeddings?: Embedding }, T & { embeddings?: Embedding }> {
+): Transform<T, T> {
   return {
     name: 'relationship',
     description: 'Build relationships between the nodes in the graph',
-    async apply(
-      graph: KnowledgeGraph<T & { embeddings?: Embedding }>
-    ): Promise<KnowledgeGraph<T & { embeddings?: Embedding }>> {
+    async apply(graph: KnowledgeGraph<T>): Promise<KnowledgeGraph<T>> {
       const nodes = graph
         .getNodes()
         .filter((node) => node.type === 'chunk' && node.metadata.embeddings)

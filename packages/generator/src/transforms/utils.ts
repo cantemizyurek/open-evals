@@ -2,25 +2,55 @@ import type { KnowledgeGraph } from '../graph/knowledge-graph'
 import type { Transform } from '../types'
 
 /**
- * Apply a sequence of transforms to a knowledge graph
- *
- * Note: Intermediate transform types cannot be statically verified.
- * Ensure transforms are compatible: output type of transform N
- * must match input type of transform N+1.
- *
- * @param graph - The input knowledge graph
- * @param transformers - Array of transforms to apply in sequence
- * @returns The transformed knowledge graph
+ * Type-safe pipeline builder for knowledge graph transformations
  */
-export async function transform<TInput extends object, TOutput extends object>(
-  graph: KnowledgeGraph<TInput>,
-  transformers: Transform<any, any, any>[]
-): Promise<KnowledgeGraph<TOutput>> {
-  let result: KnowledgeGraph<any> = graph
+export class Pipeline<T extends object> {
+  private transforms: Transform<any, any>[] = []
 
-  for (const transformer of transformers) {
-    result = await transformer.apply(result, {})
+  constructor(private kg: KnowledgeGraph<T>) {}
+
+  /**
+   * Add a transform to the pipeline
+   * The output type of the transform becomes the new pipeline type
+   */
+  pipe<TOutput extends object>(
+    transform: Transform<T, TOutput>
+  ): Pipeline<TOutput> {
+    this.transforms.push(transform)
+    return this as unknown as Pipeline<TOutput>
   }
 
-  return result as KnowledgeGraph<TOutput>
+  /**
+   * Apply all transforms in the pipeline sequentially
+   * Returns the final transformed knowledge graph
+   */
+  async apply(): Promise<KnowledgeGraph<T>> {
+    let result: KnowledgeGraph<any> = this.kg
+
+    for (const transformer of this.transforms) {
+      result = await transformer.apply(result)
+    }
+
+    return result as KnowledgeGraph<T>
+  }
+}
+
+/**
+ * Create a transform for knowledge graph transformations
+ *
+ * @param kg - The input knowledge graph
+ * @returns A transform builder
+ *
+ * @example
+ * ```ts
+ * const result = await transform(kg)
+ *   .pipe(chunk(splitter))
+ *   .pipe(embed(embedModel))
+ *   .apply()
+ * ```
+ */
+export function transform<T extends object>(
+  kg: KnowledgeGraph<T>
+): Pipeline<T> {
+  return new Pipeline(kg)
 }

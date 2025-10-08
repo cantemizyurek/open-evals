@@ -2,6 +2,7 @@ import type { EmbeddingModel } from 'ai'
 import { embedMany } from 'ai'
 import type { Transform } from '../types'
 import type { KnowledgeGraph } from '../graph/knowledge-graph'
+import { ChunkNode } from '../graph/node'
 
 export type Embedding = number[]
 
@@ -19,12 +20,12 @@ export function embed<T extends object>(
     async apply(
       graph: KnowledgeGraph<T>
     ): Promise<KnowledgeGraph<T & { embeddings?: Embedding }>> {
-      const nodes = graph.getNodes()
+      const nodes = graph.getNodesByType('chunk')
       if (nodes.length === 0)
         return graph as KnowledgeGraph<T & { embeddings?: Embedding }>
 
       const nodesToEmbed = nodes.filter(
-        (node) => node.type === 'chunk' && node.content.trim().length > 0
+        (node) => node.content.trim().length > 0
       )
 
       const nodesContent = nodesToEmbed.map((node) => node.content)

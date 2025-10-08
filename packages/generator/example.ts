@@ -3,8 +3,11 @@ import {
   chunk,
   embed,
   relationship,
-  transform,
   DocumentNode,
+  summarize,
+  embedProperty,
+  transform,
+  tap,
 } from './src'
 import { RecursiveCharacterSplitter } from '@ai-sdk-eval/rag'
 import { openai } from '@ai-sdk/openai'
@@ -22,11 +25,16 @@ const documents = await Promise.all(
   })
 )
 
-const g = await transform(graph(documents), [
-  chunk(new RecursiveCharacterSplitter()),
-  embed(openai.embedding('text-embedding-3-small')),
-  relationship(),
-])
-
-console.log(`Chunks: ${g.getNodesByType('chunk').length}`)
-console.log(`Documents: ${g.getNodesByType('document').length}`)
+const g = await transform(graph(documents))
+  .pipe(summarize(openai.chat('gpt-4.1')))
+  .pipe(
+    embedProperty(openai.embedding('text-embedding-3-small'), {
+      embedProperty: 'summary',
+      propertyName: 'summaryEmbedding',
+      filter: (node) => node.type === 'document',
+    })
+  )
+  .pipe(chunk(new RecursiveCharacterSplitter()))
+  .pipe(embed(openai.embedding('text-embedding-3-small')))
+  .pipe(relationship())
+  .apply()

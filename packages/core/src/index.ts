@@ -17,3 +17,5 @@ export { Metric, LLMMetric, EmbeddingMetric } from './metric'
 export type { MetricConfig } from './metric'
 
 export { evaluate } from './evaluate'
+
+export { pLimit, shuffle } from './utils'

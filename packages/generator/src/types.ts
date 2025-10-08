@@ -12,8 +12,9 @@ export interface Transform<
 > {
   name: string
   description: string
-  apply(
+  // Use function property (not method) for strict contravariant checking
+  apply: (
     input: KnowledgeGraph<TInputMeta>,
     options?: TOptions
-  ): Promise<KnowledgeGraph<TOutputMeta>>
+  ) => Promise<KnowledgeGraph<TOutputMeta>>
 }

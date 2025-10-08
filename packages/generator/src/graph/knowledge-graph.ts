@@ -80,8 +80,32 @@ export class KnowledgeGraph<T extends object = {}> {
     return neighbors
   }
 
-  getNodesByType(type: GraphNode<T>['type']): GraphNode<T>[] {
-    return Array.from(this.nodes.values()).filter((node) => node.type === type)
+  getNodesByType<K extends GraphNode<T>['type']>(
+    type: K
+  ): K extends 'document'
+    ? DocumentNode<T>[]
+    : K extends 'chunk'
+    ? ChunkNode<T>[]
+    : never {
+    if (type === 'document') {
+      return Array.from(this.nodes.values()).filter(
+        (node) => node.type === 'document'
+      ) as K extends 'document'
+        ? DocumentNode<T>[]
+        : K extends 'chunk'
+        ? ChunkNode<T>[]
+        : never
+    } else if (type === 'chunk') {
+      return Array.from(this.nodes.values()).filter(
+        (node) => node.type === 'chunk'
+      ) as K extends 'document'
+        ? DocumentNode<T>[]
+        : K extends 'chunk'
+        ? ChunkNode<T>[]
+        : never
+    } else {
+      throw new Error(`Invalid node type: ${type}`)
+    }
   }
 
   getNodesBy(callback: (node: GraphNode<T>) => boolean): GraphNode<T>[] {

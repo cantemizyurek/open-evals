@@ -7,7 +7,7 @@ export class EvaluationDataset {
     this.samples = samples
   }
 
-  get length() {
+  get length(): number {
     return this.samples.length
   }
 
