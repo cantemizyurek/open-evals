@@ -3,10 +3,10 @@ import { generateText } from 'ai'
 import type { Transform } from '../types'
 import type { KnowledgeGraph } from '../graph/knowledge-graph'
 import { pLimit } from '@ai-sdk-eval/core'
-import { DocumentNode } from '../graph/node'
+import { DocumentNode, GraphNode } from '../graph/node'
 
 /**
- * Summarize the document nodes in the graph
+ * Summarize the nodes in the graph
  *
  * @param model - The language model to use for summarization
  */
@@ -14,6 +14,7 @@ export function summarize<T extends object>(
   model: LanguageModel,
   config?: {
     concurrency?: number
+    filter?: <T>(node: GraphNode<T>) => boolean
   }
 ): Transform<T, T & { summary?: string }> {
   const { concurrency = 10 } = config || {}
@@ -24,14 +25,14 @@ export function summarize<T extends object>(
     async apply(
       graph: KnowledgeGraph<T>
     ): Promise<KnowledgeGraph<T & { summary?: string }>> {
-      const documentNodes = graph.getNodes()
+      const nodes = graph.getNodes().filter(config?.filter || (() => true))
 
-      if (documentNodes.length === 0) {
+      if (nodes.length === 0) {
         return graph as KnowledgeGraph<T & { summary?: string }>
       }
 
       const summaryPromises = await pLimit(
-        documentNodes,
+        nodes,
         async (node) => {
           const content =
             'content' in node ? (node as DocumentNode).content : ''
@@ -44,9 +45,9 @@ export function summarize<T extends object>(
             const result = await generateText({
               model,
               prompt: `
-Summarize the following document concisely. Focus on the main topics, key concepts, and primary purpose of the content.
+Summarize the following content concisely. Focus on the main topics, key concepts, and primary purpose of the content.
 
-Document:
+Content:
 ${content}
 
 Provide a concise summary (2-4 sentences):`.trim(),

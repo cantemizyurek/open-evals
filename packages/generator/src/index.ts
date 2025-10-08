@@ -13,3 +13,8 @@ export { relationship } from './transforms/relationship'
 export { summarize } from './transforms/summarize'
 export { tap } from './transforms/tap'
 export { transform, Pipeline } from './transforms/utils'
+
+// Persona
+export { persona } from './persona/persona'
+export { generatePersonas } from './persona/generate-persona'
+export type { Persona, GeneratePersonasOptions } from './persona/type'
