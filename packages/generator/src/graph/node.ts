@@ -21,7 +21,7 @@ const relationshipSchema = z.tuple([
 
 const baseNodeSchema = z.object({
   id: z.string(),
-  type: z.enum(['document', 'chunk', 'entity']),
+  type: z.enum(['document', 'chunk']),
   metadata: z.unknown(),
   relationships: z.array(relationshipSchema).optional(),
 })
@@ -36,20 +36,13 @@ const chunkNodeSchema = baseNodeSchema.extend({
   content: z.string(),
 })
 
-const entityNodeSchema = baseNodeSchema.extend({
-  type: z.literal('entity'),
-  name: z.string(),
-  entityType: z.string(),
-  description: z.string().optional(),
-})
-
 export abstract class GraphNode<T = unknown> {
   id: string
-  type: 'document' | 'chunk' | 'entity'
+  type: 'document' | 'chunk'
   metadata: T
   relationships: Map<string, Relationship>
 
-  constructor(id: string, type: 'document' | 'chunk' | 'entity', metadata: T) {
+  constructor(id: string, type: 'document' | 'chunk', metadata: T) {
     this.id = id
     this.type = type
     this.metadata = metadata
@@ -65,7 +58,7 @@ export abstract class GraphNode<T = unknown> {
     }
   }
 
-  static fromJSON<T>(json: Record<string, unknown>): GraphNode<T> {
+  static fromJSON<T>(_json: Record<string, unknown>): GraphNode<T> {
     throw new Error('Method not implemented.')
   }
 }
@@ -122,51 +115,6 @@ export class ChunkNode<T = unknown> extends GraphNode<T> {
       validated.id,
       validated.content,
       validated.metadata as T
-    )
-    if (validated.relationships) {
-      node.relationships = new Map(
-        validated.relationships as [string, Relationship][]
-      )
-    }
-    return node
-  }
-}
-
-export class EntityNode<T = unknown> extends GraphNode<T> {
-  public name: string
-  public entityType: string
-  public description?: string
-
-  constructor(
-    id: string,
-    name: string,
-    entityType: string,
-    metadata: T,
-    description?: string
-  ) {
-    super(id, 'entity', metadata)
-    this.name = name
-    this.entityType = entityType
-    this.description = description
-  }
-
-  override toJSON(): Record<string, unknown> {
-    return {
-      ...super.toJSON(),
-      name: this.name,
-      entityType: this.entityType,
-      description: this.description,
-    }
-  }
-
-  static fromJSON<T>(json: Record<string, unknown>): GraphNode<T> {
-    const validated = entityNodeSchema.parse(json)
-    const node = new EntityNode(
-      validated.id,
-      validated.name,
-      validated.entityType,
-      validated.metadata as T,
-      validated.description
     )
     if (validated.relationships) {
       node.relationships = new Map(

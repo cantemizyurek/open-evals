@@ -1,5 +1,5 @@
 import type { Relationship } from '../types'
-import { ChunkNode, DocumentNode, EntityNode, GraphNode } from './node'
+import { ChunkNode, DocumentNode, GraphNode } from './node'
 
 export function graph<T extends object = {}>(
   nodes?: GraphNode<T>[]
@@ -142,8 +142,6 @@ export class KnowledgeGraph<T extends object = {}> {
             graph.addNode(DocumentNode.fromJSON(nodeData))
           } else if (nodeData.type === 'chunk') {
             graph.addNode(ChunkNode.fromJSON(nodeData))
-          } else if (nodeData.type === 'entity') {
-            graph.addNode(EntityNode.fromJSON(nodeData))
           }
         }
       }

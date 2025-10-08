@@ -23,6 +23,9 @@ importers:
 
   packages/generator:
     dependencies:
+      '@ai-sdk-eval/core':
+        specifier: workspace:*
+        version: link:../core
       '@ai-sdk-eval/rag':
         specifier: workspace:*
         version: link:../rag
