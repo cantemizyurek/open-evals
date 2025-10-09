@@ -68,7 +68,11 @@ export abstract class ScenarioBuilder<T extends object = {}> {
   /**
    * Generates query configuration combinations
    */
-  protected *generateQueryConfigs() {
+  protected *generateQueryConfigs(): Generator<
+    { length: QueryLength; style: QueryStyle },
+    void,
+    unknown
+  > {
     for (const length of this.config.queryLengths) {
       for (const style of this.config.queryStyles) {
         yield { length, style }
@@ -99,36 +103,36 @@ export class SingleHopScenarioBuilder<
     count: number
   ): Scenario<T>[] {
     const scenarios: Scenario<T>[] = []
-    const chunkNodes = shuffle(graph.getNodesByType('chunk'))
+    let chunkNodes = shuffle(graph.getNodesByType('chunk'))
 
-    const nodesToProcess = this.sample(
-      chunkNodes,
-      Math.ceil(
-        count /
-          (this.config.queryLengths.length * this.config.queryStyles.length)
-      )
-    )
+    if (chunkNodes.length === 0) {
+      return scenarios
+    }
 
-    for (const node of nodesToProcess) {
-      const queryConfigs = Array.from(this.generateQueryConfigs())
-      const sampled = this.sample(queryConfigs, this.config.scenariosPerNode)
+    const queryConfigs = Array.from(this.generateQueryConfigs())
+    let nodeIndex = 0
 
-      for (const { length, style } of sampled) {
-        scenarios.push({
-          persona,
-          context: {
-            nodes: [node],
-          },
-          query: {
-            length,
-            style,
-            type: 'single-hop',
-          },
-        })
+    while (scenarios.length < count) {
+      const node = chunkNodes[nodeIndex % chunkNodes.length]
+      const { length, style } =
+        queryConfigs[Math.floor(Math.random() * queryConfigs.length)]
 
-        if (scenarios.length >= count) {
-          return scenarios
-        }
+      scenarios.push({
+        persona,
+        context: {
+          nodes: [node],
+        },
+        query: {
+          length,
+          style,
+          type: 'single-hop',
+        },
+      })
+
+      nodeIndex++
+
+      if (nodeIndex % chunkNodes.length === 0) {
+        chunkNodes = shuffle(chunkNodes)
       }
     }
 
@@ -173,33 +177,42 @@ export class MultiHopScenarioBuilder<
     const scenarios: Scenario<T>[] = []
     const chunkNodes = shuffle(graph.getNodesByType('chunk'))
 
-    const connectedGroups = this.findConnectedNodeGroups(graph, chunkNodes)
+    if (chunkNodes.length === 0) {
+      return scenarios
+    }
 
-    const groupsToProcess = this.sample(
-      connectedGroups,
-      Math.ceil(count / this.config.scenariosPerNode)
-    )
+    let connectedGroups = this.findConnectedNodeGroups(graph, chunkNodes)
 
-    for (const nodes of groupsToProcess) {
-      const queryConfigs = Array.from(this.generateQueryConfigs())
-      const sampled = this.sample(queryConfigs, this.config.scenariosPerNode)
+    if (connectedGroups.length === 0) {
+      for (let i = 0; i < chunkNodes.length - 1; i += 2) {
+        connectedGroups.push([chunkNodes[i], chunkNodes[i + 1]])
+      }
+    }
 
-      for (const { length, style } of sampled) {
-        scenarios.push({
-          persona,
-          context: {
-            nodes,
-          },
-          query: {
-            length,
-            style,
-            type: 'multi-hop',
-          },
-        })
+    const queryConfigs = Array.from(this.generateQueryConfigs())
+    let groupIndex = 0
 
-        if (scenarios.length >= count) {
-          return scenarios
-        }
+    while (scenarios.length < count) {
+      const nodes = connectedGroups[groupIndex % connectedGroups.length]
+      const { length, style } =
+        queryConfigs[Math.floor(Math.random() * queryConfigs.length)]
+
+      scenarios.push({
+        persona,
+        context: {
+          nodes,
+        },
+        query: {
+          length,
+          style,
+          type: 'multi-hop',
+        },
+      })
+
+      groupIndex++
+
+      if (groupIndex % connectedGroups.length === 0) {
+        connectedGroups = shuffle(connectedGroups)
       }
     }
 

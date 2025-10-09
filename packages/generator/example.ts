@@ -7,15 +7,13 @@ import {
   summarize,
   embedProperty,
   transform,
-  tap,
   generatePersonas,
-  SingleHopScenarioBuilder,
+  synthesize,
 } from './src'
 import { RecursiveCharacterSplitter } from '@ai-sdk-eval/rag'
 import { openai } from '@ai-sdk/openai'
 import { readFile, readdir } from 'node:fs/promises'
 import 'dotenv/config'
-import { generateScenarios } from './src/scenario/scenario-builder'
 
 const dataFolder = './data'
 
@@ -29,7 +27,7 @@ const documents = await Promise.all(
 )
 
 const g = await transform(graph(documents))
-  .pipe(summarize(openai.chat('gpt-4.1')))
+  .pipe(summarize(openai.chat('gpt-4o')))
   .pipe(
     embedProperty(openai.embedding('text-embedding-3-small'), {
       embedProperty: 'summary',
@@ -42,8 +40,32 @@ const g = await transform(graph(documents))
   .pipe(relationship())
   .apply()
 
-const personas = await generatePersonas(g, openai.chat('gpt-4.1'))
+console.log(g.getNodes().length)
 
-const scenarios = generateScenarios(g, personas[0], 2, 'single-hop')
+const personas = await generatePersonas(g, openai.chat('gpt-4o'), {
+  numPersonas: 3,
+})
 
-console.log(scenarios)
+console.log(`Generated ${personas.length} personas:`)
+personas.forEach((p) => console.log(`- ${p.name}`))
+
+console.log('\nGenerating test samples...')
+const testSamples = await synthesize(g, openai.chat('gpt-4o'), personas, 10, {
+  distribution: {
+    'single-hop-specific': 50,
+    'multi-hop-abstract': 25,
+    'multi-hop-specific': 25,
+  },
+  generateGroundTruth: true,
+  concurrency: 3,
+})
+
+console.log(`\nGenerated ${testSamples.length} test samples:\n`)
+testSamples.forEach((sample, i) => {
+  console.log(`Sample ${i + 1}:`)
+  console.log(`Question: ${sample.query}`)
+  console.log(`Contexts: ${sample.retrievedContexts?.length ?? 0} chunks`)
+  console.log(`Ground Truth: ${sample.reference?.substring(0, 100)}...`)
+  console.log(`Metadata:`, sample.metadata)
+  console.log()
+})

@@ -32,3 +32,14 @@ export {
   SingleHopScenarioBuilder,
   MultiHopScenarioBuilder,
 } from './scenario/scenario-builder'
+
+// Synthesizer
+export { synthesize } from './synthesizer/synthesize'
+export type { SynthesizerConfig, Synthesizer } from './synthesizer/type'
+export {
+  SingleHopSpecificQuerySynthesizer,
+  MultiHopAbstractQuerySynthesizer,
+  MultiHopSpecificQuerySynthesizer,
+  createSynthesizers,
+} from './synthesizer/implementations'
+export { BaseSynthesizer } from './synthesizer/base-synthesizer'
