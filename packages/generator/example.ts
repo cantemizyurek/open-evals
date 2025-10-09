@@ -8,11 +8,14 @@ import {
   embedProperty,
   transform,
   tap,
+  generatePersonas,
+  SingleHopScenarioBuilder,
 } from './src'
 import { RecursiveCharacterSplitter } from '@ai-sdk-eval/rag'
 import { openai } from '@ai-sdk/openai'
 import { readFile, readdir } from 'node:fs/promises'
 import 'dotenv/config'
+import { generateScenarios } from './src/scenario/scenario-builder'
 
 const dataFolder = './data'
 
@@ -38,3 +41,9 @@ const g = await transform(graph(documents))
   .pipe(embed(openai.embedding('text-embedding-3-small')))
   .pipe(relationship())
   .apply()
+
+const personas = await generatePersonas(g, openai.chat('gpt-4.1'))
+
+const scenarios = generateScenarios(g, personas[0], 2, 'single-hop')
+
+console.log(scenarios)

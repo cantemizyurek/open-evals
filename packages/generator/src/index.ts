@@ -18,3 +18,17 @@ export { transform, Pipeline } from './transforms/utils'
 export { persona } from './persona/persona'
 export { generatePersonas } from './persona/generate-persona'
 export type { Persona, GeneratePersonasOptions } from './persona/type'
+
+// Scenario
+export { scenario } from './scenario/scenario'
+export type {
+  Scenario,
+  QueryLength,
+  QueryStyle,
+  QueryType,
+} from './scenario/type'
+export {
+  ScenarioBuilder,
+  SingleHopScenarioBuilder,
+  MultiHopScenarioBuilder,
+} from './scenario/scenario-builder'

@@ -9,9 +9,6 @@ import type { GraphNode } from '../graph/node'
  * Embed a property from node metadata in the graph
  * Similar to Ragas' EmbeddingExtractor
  *
- * Note: For proper type safety, use the typed wrappers like embedSummary()
- * instead of this generic function.
- *
  * @param model - The embedding model to use
  * @param config - Configuration for which property to embed and where to store it
  */
