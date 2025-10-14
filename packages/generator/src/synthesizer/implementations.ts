@@ -1,6 +1,8 @@
 import type { LanguageModel } from 'ai'
 import { BaseSynthesizer } from './base-synthesizer'
 import type { Scenario } from '../scenario/type'
+import { type } from 'os'
+import { Synthesizer } from './type'
 
 /**
  * Generates specific, detailed questions from single context nodes
@@ -153,18 +155,23 @@ Generate a single, clear question that requires information from multiple contex
 }
 
 /**
- * Factory function to create all available synthesizer types
+ * Factory function to create a synthesizer
+ * @param model - The language model to use
+ * @param type - The type of synthesizer to create
+ * @returns The synthesizer
  */
-export function createSynthesizers<T extends object = {}>(
-  model: LanguageModel
-): {
-  'single-hop-specific': SingleHopSpecificQuerySynthesizer<T>
-  'multi-hop-abstract': MultiHopAbstractQuerySynthesizer<T>
-  'multi-hop-specific': MultiHopSpecificQuerySynthesizer<T>
-} {
-  return {
-    'single-hop-specific': new SingleHopSpecificQuerySynthesizer<T>(model),
-    'multi-hop-abstract': new MultiHopAbstractQuerySynthesizer<T>(model),
-    'multi-hop-specific': new MultiHopSpecificQuerySynthesizer<T>(model),
+export function createSynthesizer<T extends object = {}>(
+  model: LanguageModel,
+  type: 'single-hop-specific' | 'multi-hop-abstract' | 'multi-hop-specific'
+): Synthesizer<T> {
+  if (type === 'single-hop-specific') {
+    return new SingleHopSpecificQuerySynthesizer<T>(model)
   }
+  if (type === 'multi-hop-abstract') {
+    return new MultiHopAbstractQuerySynthesizer<T>(model)
+  }
+  if (type === 'multi-hop-specific') {
+    return new MultiHopSpecificQuerySynthesizer<T>(model)
+  }
+  throw new Error(`Invalid synthesizer type: ${type}`)
 }

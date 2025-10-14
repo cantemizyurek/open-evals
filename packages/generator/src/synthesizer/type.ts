@@ -16,18 +16,6 @@ export interface SynthesizerConfig {
    * @default true
    */
   generateGroundTruth?: boolean
-
-  /**
-   * Distribution of synthesizers to use (weights)
-   * Weights are relative ratios (do not need to sum to 100).
-   * The system normalizes them to determine the probability of selecting each synthesizer type.
-   * @default { 'single-hop-specific': 50, 'multi-hop-abstract': 25, 'multi-hop-specific': 25 }
-   */
-  distribution?: {
-    'single-hop-specific'?: number
-    'multi-hop-abstract'?: number
-    'multi-hop-specific'?: number
-  }
 }
 
 /**

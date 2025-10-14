@@ -40,6 +40,6 @@ export {
   SingleHopSpecificQuerySynthesizer,
   MultiHopAbstractQuerySynthesizer,
   MultiHopSpecificQuerySynthesizer,
-  createSynthesizers,
+  createSynthesizer,
 } from './synthesizer/implementations'
 export { BaseSynthesizer } from './synthesizer/base-synthesizer'
