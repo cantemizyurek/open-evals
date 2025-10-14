@@ -20,7 +20,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@ai-sdk-eval/core": "workspace:*",
+    "@open-evals/core": "workspace:*",
     "ai": "^5.0.60",
     "zod": "^4.1.12"
   },

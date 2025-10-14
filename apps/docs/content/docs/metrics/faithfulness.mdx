@@ -1,4 +1,134 @@
 ---
 title: Faithfulness
-description: Faithfulness metric for evaluating LLM applications.
+description: Measure how grounded the model's response is in the provided context
 ---
+
+## Overview
+
+The **Faithfulness** metric evaluates how well a model's response is grounded in the provided context. It ensures that the generated answer doesn't contain hallucinations or claims that cannot be verified from the retrieved documents.
+
+This metric is particularly valuable for Retrieval-Augmented Generation (RAG) applications where factual accuracy and grounding in source material are critical.
+
+## How It Works
+
+The Faithfulness metric uses a three-step evaluation process:
+
+1. **Statement Decomposition**: The model's response is broken down into atomic, standalone statements
+2. **Faithfulness Verification**: Each statement is checked against the retrieved contexts using natural language inference (NLI)
+3. **Score Calculation**: The final score is the ratio of faithful statements to total statements
+
+## Installation
+
+```npm
+npm i @open-evals/metrics
+```
+
+## Usage
+
+```typescript
+import { Faithfulness } from '@open-evals/metrics'
+import { openai } from '@ai-sdk/openai'
+
+// Create the metric
+const faithfulness = new Faithfulness({
+  model: openai('gpt-4.1'),
+})
+
+// Evaluate a sample
+const result = await faithfulness.evaluateSingleTurn({
+  query: 'What is the capital of France?',
+  response: 'The capital of France is Paris. It is located on the Seine River.',
+  retrievedContexts: [
+    'Paris is the capital and most populous city of France. It is situated on the Seine River.',
+  ],
+})
+
+console.log(result)
+// {
+//   name: 'faithfulness',
+//   score: 1.0,
+//   reason: '2 out of 2 statements were faithful to the context',
+//   metadata: {
+//     statements: [...]
+//   }
+// }
+```
+
+## Configuration
+
+### Options
+
+<Properties>
+  <Property name="model" type="LanguageModel" required>
+    The language model to use for evaluating faithfulness. This model performs
+    both statement decomposition and verification.
+  </Property>
+</Properties>
+
+## Required Sample Fields
+
+The Faithfulness metric requires the following fields in your evaluation sample:
+
+- `query`: The user's question or input
+- `response`: The model's generated answer
+- `retrievedContexts`: Array of context strings that were used to generate the response
+
+## Scoring
+
+The metric returns a score between **0 and 1**:
+
+- **1.0**: All statements in the response are fully grounded in the provided context
+- **0.5**: Half of the statements can be verified from the context
+- **0.0**: None of the statements are supported by the context
+
+### Score Calculation
+
+```
+Faithfulness Score = (Number of Faithful Statements) / (Total Number of Statements)
+```
+
+## Example with Metadata
+
+The metric includes detailed metadata about the evaluation:
+
+```typescript
+const result = await faithfulness.evaluateSingleTurn({
+  query: 'Who was Albert Einstein?',
+  response:
+    'Albert Einstein was a German-born theoretical physicist who developed the theory of relativity.',
+  retrievedContexts: [
+    'Albert Einstein was a German-born theoretical physicist, widely acknowledged to be one of the greatest physicists of all time. He is best known for developing the theory of relativity.',
+  ],
+})
+
+console.log(result.metadata?.statements)
+// [
+//   {
+//     statement: "Albert Einstein was a German-born theoretical physicist.",
+//     reason: "This statement is directly supported by the context.",
+//     verdict: 1
+//   },
+//   {
+//     statement: "Albert Einstein developed the theory of relativity.",
+//     reason: "The context explicitly mentions he developed the theory of relativity.",
+//     verdict: 1
+//   }
+// ]
+```
+
+## Use Cases
+
+- **RAG Systems**: Verify that generated answers don't hallucinate beyond the retrieved documents
+- **Question Answering**: Ensure responses stay grounded in provided source material
+- **Fact Checking**: Validate that claims in generated text can be traced back to context
+- **Content Generation**: Monitor AI-generated content for accuracy against source documents
+
+## Best Practices
+
+1. **Use High-Quality LLMs**: The metric's accuracy depends on the quality of the evaluation model.
+
+2. **Provide Complete Context**: Ensure that `retrievedContexts` contains all relevant information used to generate the response.
+
+3. **Monitor Edge Cases**: Empty responses or responses with no decomposable statements will return a score of 0.
+
+4. **Combine with Other Metrics**: Use Faithfulness alongside other metrics like [Factual Correctness](/docs/metrics/factual-correctness) for comprehensive evaluation.

@@ -1,4 +1,383 @@
 ---
 title: Metrics
-description: The metrics library
+description: Production-ready evaluation metrics for LLM applications
 ---
+
+## Overview
+
+The `@open-evals/metrics` package provides a collection of production-ready evaluation metrics for assessing the quality of Large Language Model (LLM) applications. These metrics help you measure various aspects of your AI system's performance, from factual accuracy to grounding in source material.
+
+## Installation
+
+```bash
+npm install @open-evals/metrics
+```
+
+## Available Metrics
+
+### Faithfulness
+
+Measures how well a model's response is grounded in the provided context. Essential for RAG applications to detect hallucinations.
+
+<Cards>
+  <Card
+    title="Faithfulness"
+    description="Evaluate if responses are grounded in retrieved contexts"
+    href="/docs/metrics/faithfulness"
+  />
+</Cards>
+
+**Use when:**
+- Building RAG (Retrieval-Augmented Generation) systems
+- Preventing hallucinations in context-based responses
+- Ensuring answers stay within provided source material
+
+**Example:**
+```typescript
+import { Faithfulness } from '@open-evals/metrics'
+import { openai } from '@ai-sdk/openai'
+
+const metric = new Faithfulness({
+  model: openai('gpt-4o-mini')
+})
+
+const score = await metric.evaluateSingleTurn({
+  query: "What is the capital of France?",
+  response: "Paris is the capital of France.",
+  retrievedContexts: ["Paris is the capital city of France."]
+})
+```
+
+### Factual Correctness
+
+Evaluates the factual accuracy of responses by comparing them against reference answers using claim decomposition and verification.
+
+<Cards>
+  <Card
+    title="Factual Correctness"
+    description="Compare responses against ground truth answers"
+    href="/docs/metrics/factual-correctness"
+  />
+</Cards>
+
+**Use when:**
+- Evaluating question answering systems
+- Benchmarking against ground truth datasets
+- Testing knowledge accuracy
+- Measuring precision, recall, or F1 of generated content
+
+**Example:**
+```typescript
+import { FactualCorrectness } from '@open-evals/metrics'
+import { openai } from '@ai-sdk/openai'
+
+const metric = new FactualCorrectness({
+  model: openai('gpt-4o-mini'),
+  mode: 'f1'  // 'precision', 'recall', or 'f1'
+})
+
+const score = await metric.evaluateSingleTurn({
+  query: "What is the capital of France?",
+  response: "Paris is the capital of France.",
+  reference: "The capital city of France is Paris."
+})
+```
+
+## Quick Start
+
+### 1. Install the package
+
+```bash
+npm install @open-evals/metrics
+```
+
+### 2. Choose a metric
+
+Select the metric that matches your evaluation needs:
+
+- **Faithfulness**: For RAG systems and context-grounded responses
+- **Factual Correctness**: For accuracy against reference answers
+
+### 3. Configure with an LLM
+
+All metrics require a language model for evaluation:
+
+```typescript
+import { openai } from '@ai-sdk/openai'
+import { anthropic } from '@ai-sdk/anthropic'
+
+// Using OpenAI
+const model = openai('gpt-4o-mini')
+
+// Or using Anthropic
+const model = anthropic('claude-3-5-sonnet-20241022')
+```
+
+### 4. Evaluate samples
+
+```typescript
+const result = await metric.evaluateSingleTurn({
+  query: "Your question",
+  response: "Model's response",
+  // Additional fields based on metric requirements
+})
+
+console.log(`Score: ${result.score}`)
+console.log(`Reason: ${result.reason}`)
+```
+
+## Metric Comparison
+
+| Metric | Requires Context | Requires Reference | Evaluation Focus | Score Range |
+|--------|-----------------|-------------------|------------------|-------------|
+| Faithfulness | Yes | No | Grounding in context | 0.0 - 1.0 |
+| Factual Correctness | No | Yes | Accuracy vs. reference | 0.0 - 1.0 |
+
+## Common Patterns
+
+### Using Multiple Metrics
+
+Combine metrics for comprehensive evaluation:
+
+```typescript
+import { Faithfulness, FactualCorrectness } from '@open-evals/metrics'
+import { openai } from '@ai-sdk/openai'
+
+const model = openai('gpt-4o-mini')
+
+const faithfulness = new Faithfulness({ model })
+const factualCorrectness = new FactualCorrectness({ model })
+
+// Evaluate a RAG response
+const faithScore = await faithfulness.evaluateSingleTurn({
+  query,
+  response,
+  retrievedContexts
+})
+
+const factScore = await factualCorrectness.evaluateSingleTurn({
+  query,
+  response,
+  reference
+})
+
+console.log('Faithfulness:', faithScore.score)
+console.log('Factual Correctness:', factScore.score)
+```
+
+### Batch Evaluation
+
+Evaluate multiple samples efficiently:
+
+```typescript
+import { EvaluationDataset } from '@ai-sdk-eval/core'
+import { Faithfulness } from '@open-evals/metrics'
+import { openai } from '@ai-sdk/openai'
+
+const dataset = new EvaluationDataset({
+  name: 'my-test-set',
+  samples: [
+    { query: "...", response: "...", retrievedContexts: [...] },
+    // ... more samples
+  ]
+})
+
+const metric = new Faithfulness({
+  model: openai('gpt-4o-mini')
+})
+
+const results = await dataset.evaluate([metric])
+```
+
+### Custom Metric Configuration
+
+Fine-tune metrics for your specific use case:
+
+```typescript
+import { FactualCorrectness } from '@open-evals/metrics'
+import { openai } from '@ai-sdk/openai'
+
+// Precision-focused evaluation
+const precisionMetric = new FactualCorrectness({
+  model: openai('gpt-4o'),
+  mode: 'precision',
+  atomicity: 'high',
+  coverage: 'high'
+})
+
+// Recall-focused evaluation
+const recallMetric = new FactualCorrectness({
+  model: openai('gpt-4o'),
+  mode: 'recall',
+  beta: 2.0  // Favor recall
+})
+```
+
+## Best Practices
+
+### 1. Choose the Right Evaluation Model
+
+The quality of evaluation depends on the LLM you use:
+
+- **GPT-4**: Highest quality evaluations, best for critical applications
+- **GPT-4o-mini**: Good balance of speed and quality
+- **Claude**: Alternative with strong reasoning capabilities
+
+```typescript
+import { openai } from '@ai-sdk/openai'
+
+// For production-critical evaluations
+const metric = new Faithfulness({
+  model: openai('gpt-4o')
+})
+
+// For development and iteration
+const devMetric = new Faithfulness({
+  model: openai('gpt-4o-mini')
+})
+```
+
+### 2. Understand Score Ranges
+
+All metrics return scores between 0.0 and 1.0:
+
+- **0.9 - 1.0**: Excellent
+- **0.7 - 0.9**: Good
+- **0.5 - 0.7**: Fair
+- **< 0.5**: Poor
+
+Set thresholds based on your application's requirements.
+
+### 3. Use Metric Metadata
+
+Metrics provide detailed metadata for debugging:
+
+```typescript
+const result = await metric.evaluateSingleTurn(sample)
+
+console.log(result.metadata)
+// Contains detailed information about the evaluation
+// - statements/claims analyzed
+// - verdicts for each statement
+// - decomposition parameters
+```
+
+### 4. Handle Errors Gracefully
+
+Wrap evaluations in try-catch blocks:
+
+```typescript
+try {
+  const result = await metric.evaluateSingleTurn(sample)
+} catch (error) {
+  console.error('Evaluation failed:', error.message)
+  // Handle missing required fields
+  // Handle API failures
+}
+```
+
+### 5. Combine Metrics Strategically
+
+Different metrics measure different aspects:
+
+```typescript
+// For RAG systems: Use both!
+const faithfulness = new Faithfulness({ model })
+const factualCorrectness = new FactualCorrectness({ model })
+
+// Faithfulness: Is it grounded in the context?
+// Factual Correctness: Is it accurate compared to ground truth?
+```
+
+## Utilities
+
+The metrics package also exports utility functions:
+
+### fbetaScore
+
+Calculate F-beta scores for custom metrics:
+
+```typescript
+import { fbetaScore } from '@open-evals/metrics'
+
+const score = fbetaScore(
+  tp,    // True positives
+  fp,    // False positives
+  fn,    // False negatives
+  beta   // Beta value (1.0 for F1)
+)
+```
+
+## Creating Custom Metrics
+
+While the package provides production-ready metrics, you can create custom metrics by extending the base classes from `@ai-sdk-eval/core`:
+
+```typescript
+import { LLMMetric, MetricScore, SingleTurnSample } from '@ai-sdk-eval/core'
+import type { LanguageModel } from 'ai'
+
+class MyCustomMetric extends LLMMetric {
+  constructor(private model: LanguageModel) {
+    super({
+      name: 'my_metric',
+      description: 'My custom metric'
+    })
+  }
+
+  async evaluateSingleTurn(sample: SingleTurnSample): Promise<MetricScore> {
+    // Your evaluation logic here
+    return {
+      name: this.name,
+      score: 0.95,
+      reason: 'Evaluation reason'
+    }
+  }
+}
+```
+
+See [Custom Metrics](/docs/core/custom-metrics) for detailed guidance.
+
+## Type Safety
+
+All metrics are fully typed with TypeScript:
+
+```typescript
+import type {
+  FaithfulnessOptions,
+  FactualCorrectnessOptions
+} from '@open-evals/metrics'
+
+// Full type inference and autocompletion
+const options: FactualCorrectnessOptions = {
+  model: openai('gpt-4o-mini'),
+  mode: 'f1',
+  beta: 1.0,
+  atomicity: 'low',
+  coverage: 'low'
+}
+```
+
+## Next Steps
+
+<Cards>
+  <Card
+    title="Faithfulness"
+    description="Learn about the Faithfulness metric for RAG systems"
+    href="/docs/metrics/faithfulness"
+  />
+  <Card
+    title="Factual Correctness"
+    description="Learn about the Factual Correctness metric"
+    href="/docs/metrics/factual-correctness"
+  />
+  <Card
+    title="Core Concepts"
+    description="Understand the evaluation framework"
+    href="/docs/core"
+  />
+  <Card
+    title="Custom Metrics"
+    description="Create your own evaluation metrics"
+    href="/docs/core/custom-metrics"
+  />
+</Cards>
