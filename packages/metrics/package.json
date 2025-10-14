@@ -1,7 +1,6 @@
 {
-  "name": "@ai-sdk-eval/metrics",
+  "name": "@open-evals/metrics",
   "version": "0.0.0",
-  "private": true,
   "description": "Metrics for evaluating AI SDKs",
   "type": "module",
   "files": [

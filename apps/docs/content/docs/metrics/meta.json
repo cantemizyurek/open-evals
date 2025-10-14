@@ -1,0 +1,6 @@
+{
+  "title": "Metrics",
+  "description": "The metrics library",
+  "root": true,
+  "icon": "ChartColumn"
+}

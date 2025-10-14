@@ -1,0 +1,75 @@
+---
+title: Open Evals
+description: An open-source framework for evaluating and testing LLM applications with built-in metrics and synthetic data generation.
+---
+
+## Introduction
+
+**Open Evals** is a comprehensive evaluation framework designed for testing and validating Large Language Model (LLM) applications. Built with TypeScript and full support for the Vercel AI SDK, it provides everything you need to ensure your AI applications work reliably in production.
+
+## Key Features
+
+### Flexible Evaluation Framework
+
+Evaluate your LLM applications with a powerful, extensible metric system that supports both LLM-based and embedding-based evaluation approaches.
+
+### Built-in Metrics
+
+Get started quickly with production-ready metrics:
+
+- **Faithfulness** - Measure how well responses are grounded in provided context
+- **Factual Correctness** - Evaluate the factual accuracy of generated responses
+- **Custom Metrics** - Easily create your own domain-specific evaluation metrics
+
+### Synthetic Test Data Generation
+
+Generate realistic test datasets using:
+
+- **Knowledge Graphs** - Build structured representations of your domain
+- **Personas** - Create diverse user profiles for comprehensive testing
+- **Scenarios** - Generate single-hop and multi-hop query scenarios
+- **Synthesizers** - Automatically generate test samples from your knowledge graph
+
+### RAG Utilities
+
+Essential tools for Retrieval-Augmented Generation workflows:
+
+- **Document chunking and splitting**
+
+## Getting Started
+
+Open Evals is organized into focused packages:
+
+<Cards>
+  <Card
+    title="@open-evals/core"
+    description="Core evaluation framework with dataset management and metric system"
+    href="/docs/core"
+  />
+  <Card
+    title="@open-evals/metrics"
+    description="Built-in evaluation metrics for common use cases"
+    href="/docs/metrics"
+  />
+  <Card
+    title="@open-evals/generator"
+    description="Synthetic test data generation with personas and scenarios"
+    href="/docs/generator"
+  />
+  <Card
+    title="@open-evals/rag"
+    description="RAG utilities including document splitters"
+    href="/docs/rag"
+  />
+</Cards>
+
+## Why Open Evals?
+
+- **Type-Safe** - Built with TypeScript for best DX experience
+- **Modular** - Use only the packages you need
+- **AI SDK** - First-class support for AI SDKs
+- **Open Source** - Free to use and extend for any project
+
+## Next Steps
+
+Dive deeper into the documentation to learn how to use Open Evals in your projects.

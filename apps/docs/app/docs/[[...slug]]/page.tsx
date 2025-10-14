@@ -1,26 +1,41 @@
-import { getPageImage, source } from '@/lib/source';
+import { getPageImage, source } from '@/lib/source'
 import {
   DocsBody,
   DocsDescription,
   DocsPage,
   DocsTitle,
-} from 'fumadocs-ui/page';
-import { notFound } from 'next/navigation';
-import { getMDXComponents } from '@/mdx-components';
-import type { Metadata } from 'next';
-import { createRelativeLink } from 'fumadocs-ui/mdx';
+} from 'fumadocs-ui/page'
+import { notFound } from 'next/navigation'
+import { getMDXComponents } from '@/mdx-components'
+import type { Metadata } from 'next'
+import { createRelativeLink } from 'fumadocs-ui/mdx'
+import { Feedback } from '@/components/feedback'
+import { LLMCopyButton, ViewOptions } from '@/components/page-actions'
 
 export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
-  const params = await props.params;
-  const page = source.getPage(params.slug);
-  if (!page) notFound();
+  const params = await props.params
+  const page = source.getPage(params.slug)
+  if (!page) notFound()
 
-  const MDX = page.data.body;
+  const MDX = page.data.body
 
   return (
-    <DocsPage toc={page.data.toc} full={page.data.full}>
+    <DocsPage
+      toc={page.data.toc}
+      full={page.data.full}
+      tableOfContent={{
+        style: 'clerk',
+      }}
+    >
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
+      <div className="flex flex-row gap-2 items-center border-b pt-2 pb-6">
+        <LLMCopyButton markdownUrl={`${page.url}.mdx`} />
+        <ViewOptions
+          markdownUrl={`${page.url}.mdx`}
+          githubUrl={`https://github.com/cantemizyurek/open-evals/blob/dev/apps/docs/content/docs/${page.path}`}
+        />
+      </div>
       <DocsBody>
         <MDX
           components={getMDXComponents({
@@ -29,20 +44,31 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
           })}
         />
       </DocsBody>
+      <Feedback
+        onRateAction={async (url, feedback) => {
+          'use server'
+
+          console.log(url, feedback)
+
+          return {
+            githubUrl: 'https://github.com/open-evals/open-evals',
+          }
+        }}
+      />
     </DocsPage>
-  );
+  )
 }
 
 export async function generateStaticParams() {
-  return source.generateParams();
+  return source.generateParams()
 }
 
 export async function generateMetadata(
-  props: PageProps<'/docs/[[...slug]]'>,
+  props: PageProps<'/docs/[[...slug]]'>
 ): Promise<Metadata> {
-  const params = await props.params;
-  const page = source.getPage(params.slug);
-  if (!page) notFound();
+  const params = await props.params
+  const page = source.getPage(params.slug)
+  if (!page) notFound()
 
   return {
     title: page.data.title,
@@ -50,5 +76,5 @@ export async function generateMetadata(
     openGraph: {
       images: getPageImage(page).url,
     },
-  };
+  }
 }
