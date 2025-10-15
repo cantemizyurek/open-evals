@@ -6,18 +6,18 @@ import {
 } from './types'
 import { isMultiTurnSample, isSingleTurnSample } from './utils'
 
-export interface MetricConfig {
+export interface MetricConfig<Name extends string = string> {
   /** Unique name for this metric */
-  name: string
+  name: Name
   /** Optional description */
   description?: string
 }
 
-export abstract class Metric {
-  readonly name: string
+export abstract class Metric<Name extends string = string> {
+  readonly name: Name
   readonly description?: string
 
-  constructor(config: MetricConfig) {
+  constructor(config: MetricConfig<Name>) {
     this.name = config.name
     this.description = config.description
   }
@@ -68,9 +68,9 @@ export abstract class Metric {
 /**
  * Base class for metrics that use LLMs for evaluation
  */
-export abstract class LLMMetric extends Metric {}
+export abstract class LLMMetric<Name extends string = string> extends Metric<Name> {}
 
 /**
  * Base class for metrics that use embeddings for evaluation
  */
-export abstract class EmbeddingMetric extends Metric {}
+export abstract class EmbeddingMetric<Name extends string = string> extends Metric<Name> {}

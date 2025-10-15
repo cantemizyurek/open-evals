@@ -8,15 +8,15 @@ import {
 } from './types'
 import { calculateStatistics, pLimit } from './utils'
 
-export async function evaluate(
+export async function evaluate<T extends readonly Metric[]>(
   dataset: EvaluationDataset,
-  metrics: Metric[],
+  metrics: T,
   config?: {
     concurrency?: number
     throwOnError?: boolean
     metadata?: Record<string, unknown>
   }
-): Promise<EvaluationResult> {
+): Promise<EvaluationResult<T>> {
   const { concurrency = 10, throwOnError = false, metadata = {} } = config || {}
 
   const samples = dataset.toArray()
@@ -43,7 +43,7 @@ export async function evaluate(
 
 export async function evaluateSample(
   sample: EvaluationSample,
-  metrics: Metric[],
+  metrics: readonly Metric[],
   config?: {
     throwOnError?: boolean
     metadata?: Record<string, unknown>

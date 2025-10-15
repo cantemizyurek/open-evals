@@ -1,5 +1,6 @@
 import type { ModelMessage } from 'ai'
 import { EvaluationDataset } from './dataset'
+import type { Metric } from './metric'
 
 /**
  * Represents a single evaluation sample (single turn)
@@ -48,10 +49,22 @@ export interface SampleResult {
   }>
 }
 
-export interface EvaluationResult {
+/**
+ * Helper type to extract metric names from an array of metrics
+ */
+type ExtractMetricNames<T extends readonly Metric[]> = T[number]['name']
+
+/**
+ * Type-safe averages object that maps each metric name to its average score
+ */
+export type Averages<T extends readonly Metric[]> = {
+  [K in ExtractMetricNames<T>]: number
+}
+
+export interface EvaluationResult<T extends readonly Metric[] = Metric[]> {
   dataset: EvaluationDataset
   statistics: {
-    averages: Record<string, number>
+    averages: Averages<T>
     totalSamples: number
     totalMetrics: number
   }

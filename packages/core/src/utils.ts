@@ -1,4 +1,5 @@
 import {
+  Averages,
   EvaluationResult,
   EvaluationSample,
   MetricScore,
@@ -6,6 +7,7 @@ import {
   SampleResult,
   SingleTurnSample,
 } from './types'
+import type { Metric } from './metric'
 
 export function isSingleTurnSample(
   sample: EvaluationSample
@@ -44,9 +46,9 @@ export async function pLimit<T, R>(
   return Promise.all(results)
 }
 
-export function calculateStatistics(
+export function calculateStatistics<T extends readonly Metric[]>(
   results: SampleResult[]
-): EvaluationResult['statistics'] {
+): EvaluationResult<T>['statistics'] {
   const metricScores = new Map<string, number[]>()
   results.forEach((result) => {
     result.scores.forEach((score) => {
@@ -57,10 +59,10 @@ export function calculateStatistics(
     })
   })
 
-  const averages: Record<string, number> = {}
+  const averages = {} as Averages<T>
   metricScores.forEach((scores, name) => {
     const sum = scores.reduce((acc, score) => acc + score, 0)
-    averages[name] = sum / scores.length
+    averages[name as ExtractMetricNames<T>] = sum / scores.length
   })
 
   return {
@@ -69,6 +71,8 @@ export function calculateStatistics(
     totalMetrics: metricScores.size,
   }
 }
+
+type ExtractMetricNames<T extends readonly Metric[]> = T[number]['name']
 
 /**
  * Shuffle an array using the Fisher-Yates algorithm
