@@ -40,16 +40,18 @@ const knowledgeGraph = await transform(graph(documents))
 
 // 3. Generate diverse user personas
 const personas = await generatePersonas(knowledgeGraph, openai.chat('gpt-4o'), {
-  numPersonas: 3,
+  count: 3,
 })
 
 // 4. Synthesize test samples
 const testSamples = await synthesize({
   graph: knowledgeGraph,
-  synthesizers: [[createSynthesizer(openai.chat('gpt-4o'), 'single-hop-specific'), 20]],
+  synthesizers: [
+    [createSynthesizer(openai.chat('gpt-4o'), 'single-hop-specific'), 20],
+  ],
   personas,
   count: 5,
-  config: { generateGroundTruth: true }
+  config: { generateGroundTruth: true },
 })
 
 console.log(`Generated ${testSamples.length} test samples`)
@@ -97,7 +99,7 @@ Personas represent different types of users who might query your system. The gen
 
 ```typescript
 const personas = await generatePersonas(knowledgeGraph, openai.chat('gpt-4o'), {
-  numPersonas: 5, // Number of personas to generate
+  count: 5, // Number of personas to generate
   concurrency: 3, // Parallel LLM calls
 })
 
@@ -142,7 +144,7 @@ const samples = await synthesize({
   graph: knowledgeGraph, // Your knowledge
   synthesizers, // What to generate
   personas, // Who asks
-  count: 10 // Number of samples
+  count: 10, // Number of samples
 })
 ```
 
@@ -206,7 +208,7 @@ const samples = await synthesize({
     [createSynthesizer(llm, 'multi-hop-specific'), 10], // 10% complex specific
   ],
   personas,
-  count: 10
+  count: 10,
 })
 ```
 
@@ -220,7 +222,7 @@ const samples = await synthesize({
   synthesizers,
   personas,
   count: 10,
-  config: { generateGroundTruth: false } // Only generate queries
+  config: { generateGroundTruth: false }, // Only generate queries
 })
 ```
 

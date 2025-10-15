@@ -1,6 +1,6 @@
 {
   "title": "Generator",
-  "description": "Synthetic test data generation",
+  "description": "Synthetic data generation",
   "root": true,
   "icon": "Sparkles",
   "pages": ["index", "quickstart", "knowledge-graph", "synthesis"]

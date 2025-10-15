@@ -35,11 +35,42 @@ function evaluate(
 ): Promise<EvaluationResult>
 ```
 
-**Parameters:**
+### Parameters
 
-- `dataset` - The samples to evaluate
-- `metrics` - Array of metrics to run on each sample
-- `config` - Optional configuration for parallel execution and error handling
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+
+<TypeTable
+  type={{
+    dataset: {
+      description: 'The samples to evaluate',
+      type: 'EvaluationDataset',
+      required: true,
+    },
+    metrics: {
+      description: 'Array of metrics to run on each sample',
+      type: 'Metric[]',
+      required: true,
+    },
+    config: {
+      description: 'Optional configuration for parallel execution and error handling',
+      type: 'object',
+    },
+    'config.concurrency': {
+      description: 'Number of samples to evaluate in parallel',
+      type: 'number',
+      default: '10',
+    },
+    'config.throwOnError': {
+      description: 'Whether to stop on first error or collect all results',
+      type: 'boolean',
+      default: 'false',
+    },
+    'config.metadata': {
+      description: 'Custom data to attach to this evaluation run',
+      type: 'Record<string, unknown>',
+    },
+  }}
+/>
 
 **Returns** an `EvaluationResult` with the dataset and computed statistics.
 
@@ -223,3 +254,33 @@ function evaluateSample(
 ```
 
 Evaluates a single sample with the provided metrics.
+
+#### Parameters
+
+<TypeTable
+  type={{
+    sample: {
+      description: 'The sample to evaluate',
+      type: 'EvaluationSample',
+      required: true,
+    },
+    metrics: {
+      description: 'Array of metrics to run on the sample',
+      type: 'Metric[]',
+      required: true,
+    },
+    config: {
+      description: 'Optional configuration for error handling and metadata',
+      type: 'object',
+    },
+    'config.throwOnError': {
+      description: 'Whether to stop on first error or collect all results',
+      type: 'boolean',
+      default: 'false',
+    },
+    'config.metadata': {
+      description: 'Custom data to attach to this sample',
+      type: 'Record<string, unknown>',
+    },
+  }}
+/>

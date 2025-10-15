@@ -1,0 +1,101 @@
+---
+title: Usage
+description: Query, traverse, and modify your knowledge graph
+---
+
+## Querying Nodes
+
+Access nodes by type, property, or custom filter:
+
+```typescript
+// Get all documents
+const documents = graph.getNodesByType('document')
+
+// Get all chunks
+const chunks = graph.getNodesByType('chunk')
+
+// Custom filtering
+const tutorials = graph.getNodesBy(
+  (node) => node.metadata?.category === 'tutorial'
+)
+
+// Get specific node
+const node = graph.getNode('chunk-123')
+```
+
+## Traversing Relationships
+
+Navigate the graph structure:
+
+```typescript
+// Get a node's neighbors
+const relatedChunks = graph.getNeighbors('chunk-1')
+
+// Get neighbors of specific type
+const similarChunks = graph.getNeighbors('chunk-1', 'similar')
+
+// Traverse the graph with depth limit
+for (const node of graph.traverse('doc-1', 2)) {
+  console.log(node.id, node.type)
+}
+```
+
+## Modifying the Graph
+
+Add or remove nodes and relationships programmatically:
+
+```typescript
+import { ChunkNode } from '@open-evals/generator'
+
+// Add a new node
+const newChunk = new ChunkNode('custom-1', 'Custom content', {})
+graph.addNode(newChunk)
+
+// Add a relationship
+graph.addRelationship('chunk-1', 'chunk-2', { type: 'similar', score: 0.85 })
+
+// Remove a node (also removes its relationships)
+graph.removeNode('chunk-1')
+```
+
+## Node Types
+
+### DocumentNode
+
+Represents a source document:
+
+```typescript
+import { DocumentNode } from '@open-evals/generator'
+
+const doc = new DocumentNode(
+  'my-doc', // ID
+  'Content here...', // Text content
+  {
+    // Custom metadata
+    author: 'team',
+    version: '2.0',
+  }
+)
+
+// Access properties
+console.log(doc.id) // 'my-doc'
+console.log(doc.content) // 'Content here...'
+console.log(doc.type) // 'document'
+console.log(doc.summary) // Set by summarize transform
+```
+
+### ChunkNode
+
+Represents a piece of a document:
+
+```typescript
+import { ChunkNode } from '@open-evals/generator'
+
+const chunk = new ChunkNode('chunk-1', 'TypeScript is a typed superset...', {
+  documentId: 'typescript-guide',
+})
+
+// Access properties
+console.log(chunk.embedding) // Set by embed transform
+console.log(chunk.relationships) // Map of related nodes
+```

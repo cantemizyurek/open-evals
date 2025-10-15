@@ -74,7 +74,7 @@ Create diverse user profiles that represent different types of users:
 import { generatePersonas } from '@open-evals/generator'
 
 const personas = await generatePersonas(knowledgeGraph, openai.chat('gpt-4o'), {
-  numPersonas: 5,
+  count: 5,
 })
 // Generates personas like:
 // - "Junior Developer learning TypeScript"

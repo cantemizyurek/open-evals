@@ -1,0 +1,5 @@
+{
+  "title": "Knowledge Graph",
+  "description": "Build and transform structured knowledge representations",
+  "pages": ["transforms", "usage", "advanced"]
+}

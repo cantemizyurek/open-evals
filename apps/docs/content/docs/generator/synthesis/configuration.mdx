@@ -7,6 +7,50 @@ description: Configure synthesis options for optimal test generation
 
 The `synthesize` function provides several configuration options to control sample generation, balance quality against speed, and customize the output for your needs.
 
+## Function Parameters
+
+import { TypeTable } from 'fumadocs-ui/components/type-table'
+
+<TypeTable
+  type={{
+    graph: {
+      description: 'The knowledge graph to generate test data from',
+      type: 'KnowledgeGraph',
+      required: true,
+    },
+    synthesizers: {
+      description:
+        'Array of [synthesizer, weight] tuples. Weights determine the distribution of samples',
+      type: '[Synthesizer, number][]',
+      required: true,
+    },
+    personas: {
+      description: 'The personas to generate test data for',
+      type: 'Persona[]',
+      required: true,
+    },
+    count: {
+      description: 'The number of test samples to generate',
+      type: 'number',
+      required: true,
+    },
+    config: {
+      description: 'Configuration options for synthesis',
+      type: 'object',
+    },
+    'config.concurrency': {
+      description: 'Number of samples to generate in parallel',
+      type: 'number',
+      default: '5',
+    },
+    'config.generateGroundTruth': {
+      description: 'Whether to generate reference answers for each sample',
+      type: 'boolean',
+      default: 'true',
+    },
+  }}
+/>
+
 ## Sample Distribution
 
 Control the mix of query types by specifying what are the weights for each synthesizer:

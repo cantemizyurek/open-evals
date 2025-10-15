@@ -1,0 +1,220 @@
+---
+title: Transforms
+description: Enrich your knowledge graph with powerful transformations
+---
+
+## Overview
+
+Transforms are composable functions that enrich your knowledge graph. Chain them together using the `transform()` API to build sophisticated knowledge representations.
+
+## Core Transforms
+
+### chunk
+
+Splits documents into smaller, semantically meaningful pieces:
+
+```typescript
+import { chunk } from '@open-evals/generator'
+import { RecursiveCharacterSplitter } from '@open-evals/rag'
+
+const graph = await transform(baseGraph)
+  .pipe(
+    chunk(
+      new RecursiveCharacterSplitter({
+        chunkSize: 512,
+        chunkOverlap: 50,
+      })
+    )
+  )
+  .apply()
+```
+
+#### Parameters
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+
+<TypeTable
+  type={{
+    splitter: {
+      description: 'The text splitter to use for chunking documents. See @open-evals/rag for available splitters.',
+      type: 'Splitter',
+      required: true,
+    },
+  }}
+/>
+
+**What it does:** For each document node, creates multiple chunk nodes using the provided text splitter. Maintains parent-child relationships between documents and chunks.
+
+**When to use:** Essential for RAG systems and any scenario where you need granular access to document content. Smaller chunks improve retrieval precision.
+
+### embed
+
+Adds vector embeddings for semantic similarity:
+
+```typescript
+import { embed } from '@open-evals/generator'
+
+const graph = await transform(baseGraph)
+  .pipe(embed(openai.embedding('text-embedding-3-small')))
+  .apply()
+```
+
+#### Parameters
+
+<TypeTable
+  type={{
+    model: {
+      description: 'The embedding model to use for generating vector embeddings',
+      type: 'EmbeddingModel',
+      required: true,
+    },
+  }}
+/>
+
+**What it does:** Generates embeddings for all chunk nodes, storing them in the `embedding` property. Uses the embedding model you provide.
+
+**When to use:** Required for semantic search and relationship detection. Run after chunking so each chunk gets its own embedding.
+
+### relationship
+
+Detects and creates connections between related chunks:
+
+```typescript
+import { relationship } from '@open-evals/generator'
+
+const graph = await transform(baseGraph).pipe(relationship(0.7)).apply()
+```
+
+#### Parameters
+
+<TypeTable
+  type={{
+    threshold: {
+      description: 'Minimum cosine similarity score required to create a relationship between chunks',
+      type: 'number',
+      default: '0.7',
+    },
+  }}
+/>
+
+**What it does:** Compares chunk embeddings to find semantically similar content. Creates bidirectional relationships between related chunks with similarity scores.
+
+**When to use:** After embedding. Enables multi-hop question generation by connecting related concepts across your knowledge base.
+
+### summarize
+
+Generates concise summaries of documents:
+
+```typescript
+import { summarize } from '@open-evals/generator'
+
+const graph = await transform(baseGraph)
+  .pipe(summarize(openai.chat('gpt-4o')))
+  .apply()
+```
+
+#### Parameters
+
+<TypeTable
+  type={{
+    model: {
+      description: 'The language model to use for generating summaries',
+      type: 'LanguageModel',
+      required: true,
+    },
+    config: {
+      description: 'Configuration options for summarization',
+      type: 'object',
+    },
+    'config.concurrency': {
+      description: 'Number of nodes to summarize in parallel',
+      type: 'number',
+      default: '10',
+    },
+    'config.filter': {
+      description: 'Optional filter function to select which nodes to summarize',
+      type: '(node: GraphNode) => boolean',
+    },
+  }}
+/>
+
+**What it does:** Uses an LLM to generate summaries for each document node, stored in the `summary` property.
+
+**When to use:** Summary is useful for generating personas and synthesizers.
+
+### embedProperty
+
+Creates embeddings for specific node properties:
+
+```typescript
+import { embedProperty } from '@open-evals/generator'
+
+const graph = await transform(baseGraph)
+  .pipe(summarize(llm))
+  .pipe(
+    embedProperty(openai.embedding('text-embedding-3-small'), {
+      embedProperty: 'summary', // Property to embed
+      propertyName: 'summaryEmbedding', // Where to store embedding
+      filter: (node) => node.type === 'document',
+    })
+  )
+  .apply()
+```
+
+#### Parameters
+
+<TypeTable
+  type={{
+    model: {
+      description: 'The embedding model to use for generating vector embeddings',
+      type: 'EmbeddingModel',
+      required: true,
+    },
+    config: {
+      description: 'Configuration for which property to embed and where to store it',
+      type: 'object',
+      required: true,
+    },
+    'config.embedProperty': {
+      description: 'Name of the property in node metadata to embed',
+      type: 'string',
+      required: true,
+    },
+    'config.propertyName': {
+      description: 'Name of the property where the embedding will be stored',
+      type: 'string',
+      required: true,
+    },
+    'config.filter': {
+      description: 'Optional filter function to select which nodes to process',
+      type: '(node: GraphNode) => boolean',
+    },
+  }}
+/>
+
+**What it does:** Embeds a specific property instead of the main content. Useful for embedding summaries, titles, or other metadata.
+
+**When to use:** When you want separate embeddings for different aspects of your nodes (e.g., content vs. summary embeddings).
+
+### tap
+
+Inspect or modify the graph mid-pipeline:
+
+```typescript
+import { tap } from '@open-evals/generator'
+
+const graph = await transform(baseGraph)
+  .pipe(chunk(splitter))
+  .pipe(
+    tap((g) => {
+      console.log(`Created ${g.getNodes().length} nodes`)
+      // Optionally modify graph here
+    })
+  )
+  .pipe(embed(embedModel))
+  .apply()
+```
+
+**What it does:** Allows you to inspect or modify the graph between transforms without breaking the pipeline.
+
+**When to use:** Debugging, logging progress, or applying custom modifications that don't fit into a standard transform.

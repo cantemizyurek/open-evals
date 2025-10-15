@@ -27,6 +27,25 @@ const samples = await synthesize({
 })
 ```
 
+### Parameters
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+
+<TypeTable
+  type={{
+    model: {
+      description: 'The language model to use for generating questions and answers',
+      type: 'LanguageModel',
+      required: true,
+    },
+    type: {
+      description: 'The type of synthesizer to create',
+      type: "'single-hop-specific'",
+      required: true,
+    },
+  }}
+/>
+
 ## Generated Questions
 
 Single-hop specific questions are:

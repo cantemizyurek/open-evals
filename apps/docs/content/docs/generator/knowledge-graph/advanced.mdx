@@ -1,0 +1,90 @@
+---
+title: Advanced
+description: Persistence, custom transforms, and best practices
+---
+
+## Persistence
+
+Save and load knowledge graphs:
+
+```typescript
+import { writeFile, readFile } from 'fs/promises'
+import { KnowledgeGraph } from '@open-evals/generator'
+
+// Save to JSON
+const json = graph.toJSON()
+await writeFile('graph.json', JSON.stringify(json, null, 2))
+
+// Load from JSON
+const loaded = await readFile('graph.json', 'utf-8')
+const restoredGraph = KnowledgeGraph.fromJSON(JSON.parse(loaded))
+```
+
+Saved graphs include all nodes, relationships, embeddings, and metadata - perfect for caching expensive operations.
+
+## Custom Transforms
+
+Create your own transforms for domain-specific enrichment:
+
+```typescript
+import type { Transform } from '@open-evals/generator'
+
+// Transform that adds word counts
+const addWordCount: Transform = async (graph) => {
+  for (const node of graph.getNodes()) {
+    const wordCount = node.content.split(/\s+/).length
+    node.metadata = {
+      ...node.metadata,
+      wordCount,
+    }
+  }
+  return graph
+}
+
+// Use in pipeline
+const graph = await transform(baseGraph)
+  .pipe(chunk(splitter))
+  .pipe(addWordCount)
+  .pipe(embed(embedModel))
+  .apply()
+```
+
+Transforms receive a knowledge graph and return a knowledge graph (or Promise). They can modify nodes, add relationships, or create new nodes.
+
+## Best Practices
+
+### Order Matters
+
+Run transforms in the right sequence:
+
+```typescript
+// Good: summarize before chunking
+await transform(graph)
+  .pipe(summarize(llm)) // Document-level
+  .pipe(chunk(splitter)) // Then split
+  .pipe(embed(embedModel)) // Then embed chunks
+  .apply()
+
+// Bad: chunking before summarizing loses document context
+await transform(graph)
+  .pipe(chunk(splitter)) // Splits document
+  .pipe(summarize(llm)) // Can't summarize chunks effectively!
+  .apply()
+```
+
+### Cache Expensive Operations
+
+Save graphs after expensive transforms:
+
+```typescript
+// First run - expensive
+const graph = await transform(baseGraph)
+  .pipe(chunk(splitter))
+  .pipe(embed(embedModel))
+  .apply()
+
+await writeFile('graph.json', JSON.stringify(graph.toJSON()))
+
+// Later - fast
+const cached = KnowledgeGraph.fromJSON(JSON.parse(await readFile('graph.json')))
+```

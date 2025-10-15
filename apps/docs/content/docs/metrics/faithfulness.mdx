@@ -58,12 +58,18 @@ console.log(result)
 
 ### Options
 
-<Properties>
-  <Property name="model" type="LanguageModel" required>
-    The language model to use for evaluating faithfulness. This model performs
-    both statement decomposition and verification.
-  </Property>
-</Properties>
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+
+<TypeTable
+  type={{
+    model: {
+      description:
+        'The language model to use for evaluating faithfulness. This model performs both statement decomposition and verification.',
+      type: 'LanguageModel',
+      required: true,
+    },
+  }}
+/>
 
 ## Required Sample Fields
 

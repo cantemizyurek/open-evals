@@ -15,10 +15,45 @@ Generate personas automatically from your knowledge graph:
 import { generatePersonas } from '@open-evals/generator'
 
 const personas = await generatePersonas(knowledgeGraph, openai.chat('gpt-4o'), {
-  numPersonas: 5, // Number to generate
+  count: 5, // Number to generate
   concurrency: 3, // Parallel LLM calls
 })
 ```
+
+### Parameters
+
+import { TypeTable } from 'fumadocs-ui/components/type-table'
+
+<TypeTable
+  type={{
+    kg: {
+      description:
+        'The knowledge graph to analyze for persona generation. Must have nodes with summary embeddings.',
+      type: 'KnowledgeGraph',
+      required: true,
+    },
+    model: {
+      description:
+        'The language model to use for generating persona descriptions',
+      type: 'LanguageModel',
+      required: true,
+    },
+    options: {
+      description: 'Configuration options for persona generation',
+      type: 'object',
+    },
+    'options.count': {
+      description:
+        'Number of personas to generate. If not specified, generates one persona per representative summary cluster.',
+      type: 'number',
+    },
+    'options.concurrency': {
+      description: 'Number of parallel LLM calls for persona generation',
+      type: 'number',
+      default: '5',
+    },
+  }}
+/>
 
 The LLM analyzes your knowledge graph and creates personas with varying:
 
@@ -84,7 +119,7 @@ Combine automatically generated personas with custom ones:
 
 ```typescript
 const generatedPersonas = await generatePersonas(graph, llm, {
-  numPersonas: 3,
+  count: 3,
 })
 
 const allPersonas = [

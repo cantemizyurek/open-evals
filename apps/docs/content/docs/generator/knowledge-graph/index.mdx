@@ -1,0 +1,69 @@
+---
+title: Knowledge Graph
+description: Build and transform structured knowledge representations
+---
+
+## Overview
+
+The knowledge graph is the foundation of test data generation. It's a structured representation of your domain knowledge with nodes (documents and chunks) and relationships (connections between concepts).
+
+Unlike raw text, a knowledge graph enables:
+
+- Semantic search through embeddings
+- Multi-hop reasoning across related chunks
+- Understanding of document structure and relationships
+- Efficient retrieval for test generation
+
+## Creating a Knowledge Graph
+
+Start with document nodes representing your source content:
+
+```typescript
+import { graph, DocumentNode } from '@open-evals/generator'
+
+const documents = [
+  new DocumentNode(
+    'typescript-basics.md', // Unique identifier
+    'TypeScript is a typed...', // Content
+    { category: 'tutorial' } // Custom metadata
+  ),
+  new DocumentNode('advanced-types.md', 'Advanced TypeScript features...', {
+    category: 'reference',
+  }),
+]
+
+const knowledgeGraph = graph(documents)
+```
+
+At this point, your graph contains only document nodes. You'll enrich it with transforms.
+
+## Transform Pipeline
+
+Transforms are composable functions that enrich your graph. Chain them together to build sophisticated knowledge representations:
+
+```typescript
+import {
+  transform,
+  chunk,
+  embed,
+  relationship,
+  summarize,
+} from '@open-evals/generator'
+import { RecursiveCharacterSplitter } from '@open-evals/rag'
+import { openai } from '@ai-sdk/openai'
+
+const enrichedGraph = await transform(graph(documents))
+  .pipe(summarize(openai.chat('gpt-4o')))
+  .pipe(chunk(new RecursiveCharacterSplitter({ chunkSize: 512 })))
+  .pipe(embed(openai.embedding('text-embedding-3-small')))
+  .pipe(relationship())
+  .apply()
+```
+
+Each transform runs sequentially, building on the previous step's output.
+
+## Next Steps
+
+- [**Transforms**](/docs/generator/knowledge-graph/transforms) - Learn about all available transforms and how to use them
+- [**Usage**](/docs/generator/knowledge-graph/usage) - Query, traverse, and modify your knowledge graph
+- [**Advanced**](/docs/generator/knowledge-graph/advanced) - Persistence, custom transforms, and best practices
