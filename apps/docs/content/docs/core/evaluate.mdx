@@ -1,0 +1,225 @@
+---
+title: Evaluate
+description: Run evaluations on datasets with configurable concurrency and error handling
+---
+
+## Overview
+
+The `evaluate` function is your main entry point for running evaluations. It takes a dataset and metrics, runs them in parallel, and returns aggregated statistics. The function handles all the complexity of parallel execution, error handling, and result aggregation.
+
+```typescript
+import { evaluate, EvaluationDataset } from '@open-evals/core'
+import { Faithfulness } from '@open-evals/metrics'
+import { openai } from '@ai-sdk/openai'
+
+const dataset = new EvaluationDataset([
+  /* samples */
+])
+const metrics = [new Faithfulness({ model: openai('gpt-4o-mini') })]
+
+const results = await evaluate(dataset, metrics)
+console.log(results.statistics.averages) // { faithfulness: 0.92 }
+```
+
+## Function Signature
+
+```typescript
+function evaluate(
+  dataset: EvaluationDataset,
+  metrics: Metric[],
+  config?: {
+    concurrency?: number // Default: 10
+    throwOnError?: boolean // Default: false
+    metadata?: Record<string, unknown>
+  }
+): Promise<EvaluationResult>
+```
+
+**Parameters:**
+
+- `dataset` - The samples to evaluate
+- `metrics` - Array of metrics to run on each sample
+- `config` - Optional configuration for parallel execution and error handling
+
+**Returns** an `EvaluationResult` with the dataset and computed statistics.
+
+## Controlling Concurrency
+
+The concurrency setting determines how many samples are evaluated simultaneously. This is critical for balancing speed against API rate limits:
+
+```typescript
+// Conservative - good for rate-limited APIs
+await evaluate(dataset, metrics, { concurrency: 3 })
+
+// Aggressive - good for high rate limits
+await evaluate(dataset, metrics, { concurrency: 50 })
+```
+
+Start conservative and increase if you're not hitting rate limits. The function will process samples in batches, waiting for one batch to complete before starting the next.
+
+## Error Handling Strategies
+
+Choose between fail-fast and error collection based on your use case:
+
+```typescript
+// Development: Stop on first error to debug quickly
+await evaluate(dataset, metrics, { throwOnError: true })
+
+// Production: Collect all errors for analysis
+const results = await evaluate(dataset, metrics, { throwOnError: false })
+
+// Check results for errors
+dataset.forEach((sample, index) => {
+  const result = results[index]
+  if (result.errors?.length > 0) {
+    console.error('Sample failed:', sample.query, result.errors)
+  }
+})
+```
+
+With `throwOnError: false` (the default), the function continues evaluating even if individual samples fail. Failed evaluations are recorded in the results so you can analyze patterns in failures.
+
+## Attaching Metadata
+
+Add metadata to track experiments, compare runs, or store contextual information:
+
+```typescript
+await evaluate(dataset, metrics, {
+  metadata: {
+    experiment_id: 'exp-001',
+    model: 'gpt-4o-mini',
+    dataset_version: '2.0',
+    timestamp: Date.now(),
+    notes: 'Testing with updated prompts',
+  },
+})
+```
+
+This metadata travels with your results and can help you organize and compare different evaluation runs.
+
+## Understanding Results
+
+### Statistics Object
+
+The evaluation returns aggregated statistics across all samples:
+
+```typescript
+{
+  dataset: EvaluationDataset,  // Your original dataset
+  statistics: {
+    averages: {                 // Average score for each metric
+      faithfulness: 0.87,
+      factual_correctness: 0.92
+    },
+    totalSamples: 100,          // Number of samples evaluated
+    totalMetrics: 2             // Number of metrics used
+  }
+}
+```
+
+### Individual Sample Results
+
+Each sample produces a `SampleResult` containing scores from all metrics:
+
+```typescript
+interface SampleResult {
+  sample: EvaluationSample // The original sample
+  scores: MetricScore[] // Array of scores, one per metric
+  errors?: Array<{
+    // Any errors that occurred
+    metric: string
+    error: Error
+  }>
+}
+```
+
+## Evaluating Single Samples
+
+For one-off evaluations or when you need more control, use `evaluateSample`:
+
+```typescript
+import { evaluateSample } from '@open-evals/core'
+
+const sample = { query: '...', response: '...' }
+
+const result = await evaluateSample(sample, metrics, {
+  throwOnError: false,
+  metadata: { sample_id: 'test-001' },
+})
+
+console.log(result.scores) // Array of MetricScore objects
+```
+
+This is useful for debugging individual samples or building custom evaluation loops.
+
+## Common Patterns
+
+### Multiple Metrics Simultaneously
+
+Run multiple metrics on the same dataset in one pass. The function evaluates all metrics for each sample in parallel:
+
+```typescript
+const metrics = [new Faithfulness({ model }), new FactualCorrectness({ model })]
+
+const results = await evaluate(dataset, metrics)
+
+// Get individual metric averages
+console.log('Faithfulness:', results.statistics.averages.faithfulness)
+console.log('F1:', results.statistics.averages.factual_correctness)
+```
+
+### A/B Testing Different Models
+
+Compare performance of different models or configurations:
+
+```typescript
+const datasetA = createDatasetForModelA()
+const datasetB = createDatasetForModelB()
+
+const [resultsA, resultsB] = await Promise.all([
+  evaluate(datasetA, metrics, { metadata: { model: 'gpt-4o-mini' } }),
+  evaluate(datasetB, metrics, { metadata: { model: 'gpt-4o' } }),
+])
+
+console.log('Model A average:', resultsA.statistics.averages)
+console.log('Model B average:', resultsB.statistics.averages)
+
+const improved = Object.keys(resultsA.statistics.averages).filter(
+  (metric) =>
+    resultsB.statistics.averages[metric] > resultsA.statistics.averages[metric]
+)
+console.log('Model B improved on:', improved)
+```
+
+## API Reference
+
+### evaluate()
+
+```typescript
+function evaluate(
+  dataset: EvaluationDataset,
+  metrics: Metric[],
+  config?: {
+    concurrency?: number
+    throwOnError?: boolean
+    metadata?: Record<string, unknown>
+  }
+): Promise<EvaluationResult>
+```
+
+Evaluates all samples in a dataset with the provided metrics.
+
+### evaluateSample()
+
+```typescript
+function evaluateSample(
+  sample: EvaluationSample,
+  metrics: Metric[],
+  config?: {
+    throwOnError?: boolean
+    metadata?: Record<string, unknown>
+  }
+): Promise<SampleResult>
+```
+
+Evaluates a single sample with the provided metrics.

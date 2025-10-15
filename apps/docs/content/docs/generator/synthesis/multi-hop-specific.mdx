@@ -1,0 +1,150 @@
+---
+title: Multi-Hop Specific
+description: Generate detailed questions with specific requirements across contexts
+---
+
+## Overview
+
+Multi-hop specific synthesizers generate the most challenging questions: detailed queries with specific requirements that require information from multiple context chunks to answer. The term "multi-hop" refers to "hopping" across multiple nodes in your knowledge graph (i.e., multiple document chunks) to gather all the specific details needed.
+
+Unlike multi-hop abstract questions (which focus on high-level concepts), multi-hop specific questions require:
+
+- **Specific facts or details** from each chunk
+- **Precise answers** that address explicit requirements
+- **Comprehensive retrieval** to find all relevant specific information
+- **Detailed synthesis** to combine specific facts from multiple sources
+
+These are the hardest questions for RAG systems because they demand both breadth (finding all relevant chunks) and precision (extracting specific details from each).
+
+## Creating the Synthesizer
+
+```typescript
+import { createSynthesizer } from '@open-evals/generator'
+import { openai } from '@ai-sdk/openai'
+
+const synthesizer = createSynthesizer(
+  openai.chat('gpt-4o'),
+  'multi-hop-specific'
+)
+
+// Use in synthesis
+const samples = await synthesize({
+  graph: knowledgeGraph,
+  synthesizers: [[synthesizer, 100]], // 100% of samples
+  personas,
+  count: 100,
+})
+```
+
+## What Makes a Question "Multi-Hop Specific"?
+
+A question is multi-hop specific when it requires:
+
+1. **Multiple hops** - Retrieving 2+ distinct context chunks
+2. **Specific details** - Precise facts, implementation details, or explicit requirements from each chunk
+3. **Complete coverage** - Missing any chunk makes the answer incomplete or incorrect
+
+**Example scenario:**
+
+- Chunk A: Details about TypeScript generics syntax
+- Chunk B: Information about strict null checks configuration
+- Chunk C: Event emitter implementation patterns
+- **Multi-hop specific question:** "How would you implement a type-safe event emitter using TypeScript generics and strict null checks?" (requires specific details from all 3 chunks)
+
+## Generated Questions
+
+Multi-hop specific questions are:
+
+**Detailed** - Include explicit requirements and constraints (e.g., "using generics AND strict null checks")
+
+**Multi-Source** - Require specific information from multiple chunks (2-4+ hops)
+
+**Precise** - Demand specific facts, not general understanding
+
+**Implementation-Focused** - Often ask about specific technical scenarios or configurations
+
+Example questions generated:
+
+```typescript
+// TypeScript documentation
+'How would you implement a type-safe event emitter using TypeScript generics and strict null checks?'
+"What's the correct way to type a React component that accepts either a string or number prop and renders differently based on the type?"
+
+// API documentation
+'How do you implement pagination with cursor-based pagination while maintaining sort order and filtering by multiple fields?'
+"What's the proper error handling strategy when making parallel API calls with different retry policies?"
+```
+
+## When to Use
+
+Multi-hop specific synthesizers are ideal for:
+
+**Edge Case Testing** - Challenge your system with the hardest questions
+
+**Implementation Verification** - Test if your system can handle detailed technical queries
+
+**Expert User Scenarios** - Simulate questions from experienced users
+
+**Quality Benchmarking** - Use as a high bar for system performance
+
+## Characteristics
+
+### Complexity
+
+- **Very High** - Most challenging question type for RAG systems
+- **Multiple Hops** - Typically require 2-4+ distinct chunks from different parts of your knowledge graph
+- **Specific Requirements** - Each requirement in the question maps to specific information in different chunks
+- **Zero-Tolerance** - Missing even one chunk or detail makes the answer incorrect
+
+### Testing Focus
+
+- **Comprehensive Retrieval** - Must find all relevant chunks across your entire knowledge base
+- **Detail Extraction** - Must correctly extract specific facts from each chunk
+- **Precision** - Answer must address every specific requirement in the question
+- **Technical Accuracy** - No room for vague, general, or incomplete responses
+- **Context Integration** - Must combine specific details from multiple sources correctly
+
+## Sample Output
+
+```typescript
+{
+  query: "How would you implement a type-safe event emitter using TypeScript generics and strict null checks?",
+  reference: "To implement a type-safe event emitter with generics and strict null checks: 1) Define an interface for event types mapping event names to payload types, 2) Use a generic constraint to ensure type safety, 3) Implement methods with proper null handling...",
+  retrievedContexts: [
+    // Hop 1: Specific details about generics implementation
+    "TypeScript generics allow you to create reusable components that work with multiple types. Use <T extends Type> syntax to constrain generic types...",
+
+    // Hop 2: Specific information about strict null checks
+    "Strict null checks in TypeScript ensure that null and undefined are handled explicitly. Enable with 'strictNullChecks': true in tsconfig.json. Types must explicitly include null or undefined...",
+
+    // Hop 3: Specific event emitter implementation details
+    "Event emitters in TypeScript can be typed using mapped types and conditional types. Define event maps as Record<EventName, PayloadType>...",
+
+    // Hop 4: Specific listener handling requirements
+    "The EventEmitter pattern requires careful handling of listener registration and emission. Store listeners in a Map<EventName, Set<Handler>>..."
+  ],
+  metadata: {
+    persona: "Senior Architect",
+    queryType: "specific",
+    queryLength: "long",
+    queryStyle: "technical"
+  }
+}
+```
+
+Notice how the question has **4 specific requirements** that require **4 different hops**:
+
+1. "type-safe" → requires chunk about TypeScript type safety
+2. "event emitter" → requires chunk about event emitter patterns
+3. "using generics" → requires chunk about generics implementation
+4. "strict null checks" → requires chunk about null handling
+
+Missing any single chunk would make it impossible to provide a complete, correct answer.
+
+## Best Practices
+
+**Use sparingly** - Multi-hop specific questions are very challenging. Use them as 10-20% of your test suite to test your system's limits
+
+**Optimize retrieval** - Increase `topK` to 8+ and consider multi-stage retrieval strategies to ensure all required chunks are found
+
+**Use stronger models** - Complex questions benefit from more capable models like GPT-5 or Claude 4.5 sonnet

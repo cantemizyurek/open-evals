@@ -1,0 +1,126 @@
+---
+title: Multi-Hop Abstract
+description: Generate conceptual questions requiring reasoning across contexts
+---
+
+## Overview
+
+Multi-hop abstract synthesizers generate complex, conceptual questions that require information from multiple context chunks to answer. The term "multi-hop" refers to the need to "hop" across multiple nodes in your knowledge graph (i.e., multiple document chunks) to find all the information needed for a complete answer.
+
+These questions test both:
+- **Retrieval breadth** - Can your system find all relevant chunks?
+- **Information synthesis** - Can your system combine information from multiple sources into a coherent answer?
+
+Unlike single-hop questions (answerable from one chunk), multi-hop abstract questions focus on understanding relationships, patterns, and high-level concepts that span multiple parts of your documentation.
+
+## Creating the Synthesizer
+
+```typescript
+import { createSynthesizer } from '@open-evals/generator'
+import { openai } from '@ai-sdk/openai'
+
+const synthesizer = createSynthesizer(openai.chat('gpt-4o'), 'multi-hop-abstract')
+
+// Use in synthesis
+const samples = await synthesize({
+  graph: knowledgeGraph,
+  synthesizers: [[synthesizer, 100]], // 100% of samples
+  personas,
+  count: 100,
+})
+```
+
+## What Makes a Question "Multi-Hop"?
+
+A question is multi-hop when answering it requires retrieving and synthesizing information from **2 or more distinct context chunks** from your knowledge graph. Each "hop" represents retrieving information from a different node in the graph.
+
+**Example scenario:**
+- Chunk A discusses TypeScript's type checking
+- Chunk B discusses IDE autocomplete features
+- Chunk C discusses refactoring tools
+- **Multi-hop question:** "How does TypeScript's type system improve code quality?" (requires information from all 3 chunks)
+
+## Generated Questions
+
+Multi-hop abstract questions are:
+
+**Conceptual** - Focus on understanding relationships and patterns, not isolated facts
+
+**Multi-Source** - Require information from 2+ chunks to answer completely
+
+**Abstract** - Ask about "how" and "why" rather than specific details
+
+**Synthesis-Heavy** - Require combining and reasoning across information, not just retrieval
+
+Example questions generated:
+
+```typescript
+// TypeScript documentation
+"How does TypeScript's type system improve code quality?"
+"What are the tradeoffs between different typing approaches?"
+"How do generics relate to type safety and reusability?"
+
+// Architecture documentation
+"How do microservices compare to monolithic architectures?"
+"What factors influence database selection for a project?"
+"How does caching improve system performance?"
+```
+
+## When to Use
+
+Multi-hop abstract synthesizers are ideal for:
+
+**Reasoning Testing** - Test if your system can synthesize information across sources
+
+**Conceptual Understanding** - Verify your system understands relationships, not just facts
+
+**Advanced Capabilities** - Challenge your system with questions requiring deeper analysis
+
+**Realistic Scenarios** - Many user questions are conceptual, not purely factual
+
+## Characteristics
+
+### Complexity
+- **Medium-High** - Require understanding relationships across multiple sources
+- **Multiple Hops** - Need 2-3+ distinct chunks from different parts of your knowledge graph
+- **Conceptual** - Focus on "why" and "how" rather than "what"
+- **Synthesis Required** - Can't be answered by simply concatenating facts; requires reasoning
+
+### Testing Focus
+- **Retrieval Breadth** - Does your RAG system find all relevant chunks across different topics?
+- **Information Synthesis** - Can your LLM combine information from multiple sources coherently?
+- **Relationship Understanding** - Does your system grasp how concepts connect and relate?
+- **Context Ranking** - Are the most relevant chunks from each topic retrieved?
+
+## Sample Output
+
+```typescript
+{
+  query: "How does TypeScript's type system improve code quality?",
+  reference: "TypeScript's type system improves code quality in several ways: 1) It catches type-related errors at compile time rather than runtime, 2) It provides better IDE support through autocomplete and inline documentation, 3) It makes code more self-documenting through explicit types, and 4) It enables safer refactoring by catching breaking changes early.",
+  retrievedContexts: [
+    // Hop 1: Chunk about compile-time checking
+    "TypeScript provides static type checking, which catches type errors during development...",
+    // Hop 2: Chunk about compiler features
+    "The TypeScript compiler analyzes your code and reports type mismatches...",
+    // Hop 3: Chunk about IDE integration
+    "IDE support for TypeScript includes intelligent autocomplete and refactoring tools..."
+  ],
+  metadata: {
+    persona: "Senior Architect",
+    queryType: "abstract",
+    queryLength: "long",
+    queryStyle: "technical"
+  }
+}
+```
+
+Notice how the complete answer requires information from 3 different chunks (3 hops) - each covering a different aspect of how TypeScript improves code quality.
+
+## Best Practices
+
+**Balance with simpler questions** - Use multi-hop abstract as 20-30% of your test suite alongside single-hop questions
+
+**Use appropriate retrieval settings** - Increase `topK` to 5-8 to ensure all relevant chunks are retrieved
+
+**Test synthesis capabilities** - These questions are excellent for evaluating how well your LLM combines information from multiple sources

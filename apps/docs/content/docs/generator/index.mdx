@@ -1,0 +1,167 @@
+---
+title: Generator
+description: Generate synthetic test data for LLM evaluation
+---
+
+## Overview
+
+The `@open-evals/generator` package helps you create realistic, diverse test datasets automatically. Instead of manually writing hundreds of test cases, you provide your domain knowledge and let the generator create comprehensive test suites.
+
+The package builds a knowledge graph from your documents, generates diverse user personas, and synthesizes test samples that cover different query types and complexity levels.
+
+## Installation
+
+```npm
+npm install @open-evals/generator @open-evals/rag
+```
+
+## Why Generate Test Data?
+
+### The Data Problem
+
+When building and evaluating LLM applications, you face a critical challenge: **you don't have test data yet**.
+
+- **No User Queries** - Your application is new or you haven't collected real user interactions
+- **Manual Creation is Expensive** - Writing test cases by hand is time-consuming, costly, and difficult to scale
+- **Coverage is Limited** - Manually created datasets often miss edge cases and lack diversity
+- **Evaluation is Impossible** - Without test data, you can't measure performance or detect regressions
+
+**Synthetic Data Generation (SDG) solves this problem** by automatically creating realistic, diverse test datasets from your domain knowledge.
+
+### How SDG Helps
+
+The generator addresses these challenges by:
+
+- **Ensuring Coverage** - Automatically generates tests that cover all parts of your knowledge base, including edge cases you might miss
+- **Creating Diversity** - Generates queries from different personas with varying expertise levels and communication styles
+- **Scaling Easily** - Produce hundreds of realistic test samples in minutes instead of days of manual work
+- **Maintaining Quality** - Uses LLMs to generate both questions and reference answers, ensuring consistency and accuracy
+- **Saving Time & Money** - Eliminate the need for expensive manual dataset creation and accelerate your development cycle
+
+## How It Works
+
+The generator follows a four-step process:
+
+### 1. Build a Knowledge Graph
+
+Transform your documents into a structured graph with relationships between concepts:
+
+```typescript
+import {
+  graph,
+  DocumentNode,
+  chunk,
+  embed,
+  relationship,
+} from '@open-evals/generator'
+import { RecursiveCharacterSplitter } from '@open-evals/rag'
+import { openai } from '@ai-sdk/openai'
+
+const documents = [new DocumentNode('typescript-guide.md', content, {})]
+
+const knowledgeGraph = await transform(graph(documents))
+  .pipe(chunk(new RecursiveCharacterSplitter()))
+  .pipe(embed(openai.embedding('text-embedding-3-small')))
+  .pipe(relationship())
+  .apply()
+```
+
+### 2. Generate Personas
+
+Create diverse user profiles that represent different types of users:
+
+```typescript
+import { generatePersonas } from '@open-evals/generator'
+
+const personas = await generatePersonas(knowledgeGraph, openai.chat('gpt-4o'), {
+  numPersonas: 5,
+})
+// Generates personas like:
+// - "Junior Developer learning TypeScript"
+// - "Senior Architect evaluating type systems"
+// - "Technical Writer documenting features"
+```
+
+### 3. Configure Synthesizers
+
+Choose what types of questions to generate:
+
+```typescript
+import { createSynthesizer } from '@open-evals/generator'
+
+const synthesizers = [
+  [createSynthesizer(openai.chat('gpt-4o'), 'single-hop-specific'), 50], // 50 simple questions
+  [createSynthesizer(openai.chat('gpt-4o'), 'multi-hop-abstract'), 25], // 25 complex questions
+  [createSynthesizer(openai.chat('gpt-4o'), 'multi-hop-specific'), 25], // 25 detailed complex
+]
+```
+
+### 4. Synthesize Test Samples
+
+Generate your complete test dataset:
+
+```typescript
+import { synthesize } from '@open-evals/generator'
+
+const testSamples = await synthesize({
+  graph: knowledgeGraph,
+  synthesizers,
+  personas,
+  count: 10,
+  config: { generateGroundTruth: true },
+})
+```
+
+Each sample includes:
+
+- `query` - The generated question
+- `reference` - Ground truth answer
+- `retrievedContexts` - Relevant document chunks
+- `metadata` - Persona, difficulty, query type
+
+## Key Features
+
+### Knowledge Graph Construction
+
+Build structured representations of your domain knowledge with automatic chunking, embedding, and relationship detection:
+
+- **Document nodes** - Your source documents
+- **Chunk nodes** - Semantically meaningful pieces
+- **Relationships** - Connections between concepts
+
+### Transform Pipeline
+
+Process documents through a series of transforms using a fluent API:
+
+```typescript
+await transform(graph)
+  .pipe(summarize(llm)) // Generate summaries
+  .pipe(chunk(splitter)) // Split into chunks
+  .pipe(embed(embedModel)) // Create embeddings
+  .pipe(relationship()) // Detect relationships
+  .apply()
+```
+
+### Diverse Query Types
+
+Generate different complexity levels:
+
+- **Single-Hop** - Simple questions answerable from one context chunk
+- **Multi-Hop** - Complex questions requiring multiple pieces of information
+- **Abstract** - High-level conceptual questions
+- **Specific** - Detailed technical questions
+- **Custom** - Custom questions
+
+### Persona-Based Generation
+
+Each test sample is generated from a specific persona's perspective, ensuring diverse question styles, expertise levels, and use cases.
+
+## Architecture
+
+The generator is built on three core abstractions:
+
+- **Knowledge Graph** - Stores and queries your domain knowledge
+- **Transforms** - Composable functions that enrich the graph
+- **Synthesizers** - Generate test samples from scenarios
+
+This modular design lets you customize each step while maintaining a simple, declarative API.

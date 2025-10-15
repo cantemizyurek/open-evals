@@ -1,0 +1,96 @@
+---
+title: Single-Hop Specific
+description: Generate simple, focused questions from single context chunks
+---
+
+## Overview
+
+Single-hop specific synthesizers generate simple, focused questions that can be answered from a single context chunk. These are ideal for testing basic retrieval and factual accuracy in RAG systems.
+
+## Creating the Synthesizer
+
+```typescript
+import { createSynthesizer } from '@open-evals/generator'
+import { openai } from '@ai-sdk/openai'
+
+const synthesizer = createSynthesizer(
+  openai.chat('gpt-4o'),
+  'single-hop-specific'
+)
+
+// Use in synthesis
+const samples = await synthesize({
+  graph: knowledgeGraph,
+  synthesizers: [[synthesizer, 100]], // 100% of samples
+  personas,
+  count: 100,
+})
+```
+
+## Generated Questions
+
+Single-hop specific questions are:
+
+**Factual and Direct** - Clear, unambiguous questions with specific answers
+
+**Single-Source** - Answerable from one context chunk
+
+**Specific** - Target particular concepts, features, or details
+
+Example questions generated:
+
+```typescript
+// TypeScript documentation
+'What is the syntax for optional properties in TypeScript?'
+'How do you declare a string array in TypeScript?'
+'What does the readonly modifier do in TypeScript?'
+
+// API documentation
+'What HTTP method does the /users endpoint accept?'
+'What is the rate limit for the search API?'
+'What format does the API return error messages in?'
+```
+
+## When to Use
+
+Single-hop specific synthesizers are ideal for:
+
+**Baseline Testing** - Establish minimum retrieval quality for your RAG system
+
+**Factual Accuracy** - Test if your system can retrieve and return specific facts correctly
+
+**Knowledge Coverage** - Verify all key concepts in your knowledge base are accessible
+
+**Quick Iterations** - Fast to generate and evaluate, good for development
+
+## Characteristics
+
+### Complexity
+
+- **Low** - Straightforward questions with direct answers
+- **Single Context** - Only one chunk needed to answer
+- **Clear Intent** - No ambiguity about what's being asked
+
+### Testing Focus
+
+- **Retrieval** - Does your system find the right chunk?
+- **Accuracy** - Does your system extract the correct information?
+- **Precision** - Does your system answer without hallucination?
+
+## Sample Output
+
+```typescript
+{
+  query: "What is the syntax for optional properties in TypeScript?",
+  reference: "Optional properties in TypeScript use the ? modifier after the property name. For example: `interface User { name: string; age?: number; }` makes age optional.",
+  retrievedContexts: [
+    "TypeScript provides several ways to mark properties as optional. The ? modifier after a property name indicates it may be undefined..."
+  ],
+  metadata: {
+    persona: "Junior Developer",
+    queryType: "specific",
+    queryLength: "medium",
+    queryStyle: "conversational"
+  }
+}
+```

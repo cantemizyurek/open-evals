@@ -1,0 +1,164 @@
+---
+title: Evaluation Dataset
+description: Manage and manipulate evaluation samples
+---
+
+## Overview
+
+`EvaluationDataset` is the container for all your evaluation samples. It provides a rich set of methods for filtering, transforming, and managing test data. Think of it as an enhanced array designed specifically for LLM evaluation workflows.
+
+All transformation methods return new dataset instances, making it easy to chain operations without mutating your original data.
+
+## Creating a Dataset
+
+Initialize a dataset with an array of samples. The constructor accepts both single-turn and multi-turn samples:
+
+```typescript
+import { EvaluationDataset } from '@open-evals/core'
+
+const dataset = new EvaluationDataset([
+  {
+    query: 'What is TypeScript?',
+    response: 'TypeScript is a typed superset of JavaScript.',
+    reference: 'TypeScript is a strongly typed programming language.',
+  },
+])
+```
+
+## Accessing Data
+
+The dataset provides familiar array-like access patterns with some additional conveniences:
+
+```typescript
+dataset.length // Get the number of samples
+dataset.at(0) // Access by index (supports negative indices)
+dataset.at(-1) // Get the last sample
+dataset.toArray() // Convert to a plain array
+
+// The dataset is iterable, so you can use it in for...of loops
+for (const sample of dataset) {
+  console.log(sample.query)
+}
+
+// Or use forEach for index access
+dataset.forEach((sample, index) => {
+  console.log(`Sample ${index}:`, sample.query)
+})
+```
+
+## Building Datasets
+
+You can build datasets incrementally, which is useful when loading from multiple sources or generating samples programmatically:
+
+```typescript
+const dataset = new EvaluationDataset([])
+
+// Add individual samples as they become available
+dataset.add({ query: '...', response: '...' })
+
+// Or add multiple samples at once
+dataset.addMany([sample1, sample2, sample3])
+```
+
+This pattern is particularly helpful when combining data from different sources like APIs, files, or generators.
+
+## Filtering and Mapping
+
+Transform your dataset using familiar functional programming patterns. Both methods return new datasets, preserving the original:
+
+```typescript
+// Filter keeps only samples that match your criteria
+const typeScriptQuestions = dataset.filter((s) =>
+  s.query.toLowerCase().includes('typescript')
+)
+
+// Map transforms each sample - useful for adding metadata or preprocessing
+const withTimestamps = dataset.map((s) => ({
+  ...s,
+  metadata: { ...s.metadata, processedAt: Date.now() },
+}))
+
+// Chain operations for complex transformations
+const processed = dataset
+  .filter((s) => s.query.length > 10)
+  .map((s) => ({ ...s, query: s.query.trim() }))
+```
+
+## Sampling and Splitting
+
+Datasets provide convenient methods for creating subsets, essential for ML workflows:
+
+```typescript
+// Get a random subset - perfect for quick testing
+const testSubset = dataset.sample(10)
+
+// Split into train/test sets - ratio determines the first set size
+const [train, test] = dataset.split(0.8) // 80% train, 20% test
+
+// For train/val/test splits, split twice
+const [trainVal, test] = dataset.split(0.9)
+const [train, val] = trainVal.split(0.89) // Results in ~80/10/10
+
+// Shuffle for randomization
+const shuffled = dataset.shuffle()
+
+// Slice for specific ranges
+const first100 = dataset.slice(0, 100)
+const samples20to30 = dataset.slice(20, 30)
+```
+
+## Persistence
+
+Save and load datasets using JSON or JSONL format. JSONL (one JSON object per line) is recommended for large datasets as it's more memory-efficient and easier to stream:
+
+```typescript
+import { writeFile, readFile } from 'fs/promises'
+
+// Save as JSONL (recommended)
+const jsonl = dataset.toJSONL()
+await writeFile('dataset.jsonl', jsonl)
+
+// Load from JSONL
+const content = await readFile('dataset.jsonl', 'utf-8')
+const loaded = EvaluationDataset.fromJSONL(content)
+
+// Or use JSON for smaller datasets
+await writeFile('dataset.json', dataset.toJSON())
+const loaded2 = EvaluationDataset.fromJSON(
+  await readFile('dataset.json', 'utf-8')
+)
+```
+
+## API Reference
+
+### Properties
+
+- `length: number` - Number of samples in the dataset
+
+### Access Methods
+
+- `at(index: number)` - Get sample at index (supports negative indices)
+- `toArray()` - Convert to plain array
+- `forEach(callback)` - Iterate with index
+- `[Symbol.iterator]()` - Makes dataset iterable
+
+### Modification Methods
+
+- `add(sample)` - Add a single sample
+- `addMany(samples)` - Add multiple samples
+
+### Transformation Methods
+
+- `filter(callback)` - Filter samples (returns new dataset)
+- `map(callback)` - Transform samples (returns new dataset)
+- `slice(start, end?)` - Extract range (returns new dataset)
+- `sample(size)` - Get random subset (returns new dataset)
+- `shuffle()` - Randomize order (returns new dataset)
+- `split(ratio)` - Split into two datasets
+
+### Serialization Methods
+
+- `toJSON()` - Serialize to JSON string
+- `toJSONL()` - Serialize to JSONL string
+- `static fromJSON(json)` - Deserialize from JSON
+- `static fromJSONL(jsonl)` - Deserialize from JSONL

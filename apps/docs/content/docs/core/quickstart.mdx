@@ -1,0 +1,104 @@
+---
+title: Quick Start
+description: Get started with @open-evals/core in minutes
+---
+
+## Installation
+
+```npm
+npm install @open-evals/core @open-evals/metrics @ai-sdk/openai
+```
+
+## Basic Example
+
+The core package provides everything you need to evaluate LLM responses. Start by creating a dataset of samples, choose your metrics, and run the evaluation:
+
+```typescript
+import { EvaluationDataset, evaluate } from '@open-evals/core'
+import { Faithfulness } from '@open-evals/metrics'
+import { openai } from '@ai-sdk/openai'
+
+// 1. Create a dataset with your test samples
+const dataset = new EvaluationDataset([
+  {
+    query: 'What is TypeScript?',
+    response: 'TypeScript is a typed superset of JavaScript.',
+    retrievedContexts: ['TypeScript adds static typing to JavaScript.'],
+  },
+])
+
+// 2. Configure the metric with your chosen model
+const metric = new Faithfulness({ model: openai('gpt-4o-mini') })
+
+// 3. Run evaluation - the function handles parallelization automatically
+const results = await evaluate(dataset, [metric])
+
+console.log(results.statistics.averages) // { faithfulness: 0.92 }
+```
+
+## Understanding Sample Types
+
+The framework supports two different evaluation scenarios, each with a specific sample format.
+
+### Single-Turn Samples
+
+Use this format for simple query-response pairs, like QA systems or RAG applications. Each sample represents one question and one answer:
+
+```typescript
+{
+  query: 'What is the capital of France?',
+  response: 'Paris is the capital of France.',
+  reference: 'The capital of France is Paris.',           // Optional: ground truth answer
+  retrievedContexts: ['Paris is the capital city of France.']  // Optional: for RAG evaluation
+}
+```
+
+### Multi-Turn Samples
+
+Use this format for conversations where context from previous messages matters. The framework can evaluate the full conversation flow:
+
+```typescript
+{
+  messages: [
+    { role: 'user', content: 'Hello!' },
+    { role: 'assistant', content: 'Hi! How can I help?' },
+    { role: 'user', content: 'Tell me about Paris' },
+    { role: 'assistant', content: 'Paris is the capital of France...' },
+  ]
+}
+```
+
+## Configuration Options
+
+The evaluate function accepts configuration to control how evaluations run. These options help you balance speed, error handling, and tracking.
+
+```typescript
+await evaluate(dataset, metrics, {
+  concurrency: 10, // Number of samples to evaluate in parallel (default: 10)
+  throwOnError: false, // Whether to stop on first error or collect all results
+  metadata: { exp: '001' }, // Custom data to attach to this evaluation run
+})
+```
+
+**Concurrency** determines how many evaluations run simultaneously. Higher values speed up large datasets but may hit API rate limits. Start with 10 for API-based metrics, increase for local models.
+
+**Error handling** lets you choose between failing fast or collecting all results including errors.
+
+## Working with Datasets
+
+The [EvaluationDataset](./dataset.mdx) class provides utility methods for common data operations. All methods return new datasets, so you can chain operations:
+
+```typescript
+// Filter samples based on criteria
+const filtered = dataset.filter((s) => s.query.includes('TypeScript'))
+
+// Get a random subset for testing
+const sample = dataset.sample(10)
+
+// Split into training and test sets
+const [train, test] = dataset.split(0.8)
+
+// Persist your dataset for later use
+await writeFile('data.jsonl', dataset.toJSONL())
+const loaded = EvaluationDataset.fromJSONL(await readFile('data.jsonl'))
+```

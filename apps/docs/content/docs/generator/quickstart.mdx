@@ -1,0 +1,262 @@
+---
+title: Quick Start
+description: Generate your first synthetic test dataset in minutes
+---
+
+## Installation
+
+```npm
+npm install @open-evals/generator @open-evals/rag @ai-sdk/openai
+```
+
+## Basic Example
+
+The simplest way to generate test data is to provide your documents and let the generator do the rest:
+
+```typescript
+import {
+  graph,
+  DocumentNode,
+  chunk,
+  embed,
+  relationship,
+  generatePersonas,
+  synthesize,
+  createSynthesizer,
+  transform,
+} from '@open-evals/generator'
+import { RecursiveCharacterSplitter } from '@open-evals/rag'
+import { openai } from '@ai-sdk/openai'
+
+// 1. Create documents from your content
+const documents = [new DocumentNode('typescript-guide.md', fileContent, {})]
+
+// 2. Build knowledge graph with transforms
+const knowledgeGraph = await transform(graph(documents))
+  .pipe(chunk(new RecursiveCharacterSplitter({ chunkSize: 512 })))
+  .pipe(embed(openai.embedding('text-embedding-3-small')))
+  .pipe(relationship())
+  .apply()
+
+// 3. Generate diverse user personas
+const personas = await generatePersonas(knowledgeGraph, openai.chat('gpt-4o'), {
+  numPersonas: 3,
+})
+
+// 4. Synthesize test samples
+const testSamples = await synthesize({
+  graph: knowledgeGraph,
+  synthesizers: [[createSynthesizer(openai.chat('gpt-4o'), 'single-hop-specific'), 20]],
+  personas,
+  count: 5,
+  config: { generateGroundTruth: true }
+})
+
+console.log(`Generated ${testSamples.length} test samples`)
+```
+
+## Understanding the Pipeline
+
+### Step 1: Create Document Nodes
+
+Document nodes are the starting point. They wrap your raw content with metadata:
+
+```typescript
+const doc = new DocumentNode(
+  'my-doc.md', // ID/filename
+  'Content here...', // The actual text
+  {
+    // Custom metadata
+    category: 'tutorial',
+    author: 'team',
+  }
+)
+```
+
+### Step 2: Transform Pipeline
+
+Transforms enrich your documents step by step. Each transform adds capabilities to your knowledge graph:
+
+```typescript
+const graph = await transform(graph(documents))
+  .pipe(chunk(splitter)) // Break into smaller pieces
+  .pipe(embed(embedModel)) // Add vector embeddings
+  .pipe(relationship()) // Find connections
+  .apply()
+```
+
+**chunk** - Splits documents into semantically meaningful chunks using the RAG package's text splitters
+
+**embed** - Creates vector embeddings for semantic similarity search
+
+**relationship** - Detects and creates connections between related chunks based on embedding similarity
+
+### Step 3: Generate Personas
+
+Personas represent different types of users who might query your system. The generator uses your knowledge graph to create realistic user profiles:
+
+```typescript
+const personas = await generatePersonas(knowledgeGraph, openai.chat('gpt-4o'), {
+  numPersonas: 5, // Number of personas to generate
+  concurrency: 3, // Parallel LLM calls
+})
+
+// Example personas generated:
+// {
+//   name: "Junior Developer",
+//   description: "New to programming, learning TypeScript basics..."
+// }
+```
+
+The LLM analyzes your knowledge graph and creates personas with different:
+
+- Expertise levels (beginner to expert)
+- Use cases (learning, building, troubleshooting)
+- Communication styles (technical, casual, formal)
+
+### Step 4: Configure Synthesizers
+
+Synthesizers generate different types of questions. Choose synthesizers based on what you want to test:
+
+```typescript
+const synthesizers = [
+  // [synthesizer, weight]
+  [createSynthesizer(llm, 'single-hop-specific'), 50],
+  [createSynthesizer(llm, 'multi-hop-abstract'), 25],
+  [createSynthesizer(llm, 'multi-hop-specific'), 25],
+]
+```
+
+**single-hop-specific** - Simple, focused questions answerable from one chunk
+
+**multi-hop-abstract** - Complex conceptual questions requiring multiple chunks
+
+**multi-hop-specific** - Detailed multi-part questions with specific requirements
+
+### Step 5: Generate Samples
+
+The synthesize function orchestrates the entire generation process:
+
+```typescript
+const samples = await synthesize({
+  graph: knowledgeGraph, // Your knowledge
+  synthesizers, // What to generate
+  personas, // Who asks
+  count: 10 // Number of samples
+})
+```
+
+Each generated sample is a complete test case:
+
+```typescript
+{
+  query: "How do I define optional properties in TypeScript interfaces?",
+  reference: "In TypeScript, optional properties are marked with a question mark...",
+  retrievedContexts: [
+    "TypeScript interfaces allow optional properties using the ? syntax...",
+    "Optional properties can be undefined or the specified type..."
+  ],
+  metadata: {
+    persona: "Junior Developer",
+    queryType: "single-hop-specific",
+    difficulty: "beginner",
+    nodeIds: ["chunk-1", "chunk-2"]
+  }
+}
+```
+
+## Working with Multiple Documents
+
+Load and process multiple documents efficiently:
+
+```typescript
+import { readdir, readFile } from 'fs/promises'
+
+// Load all markdown files from a directory
+const files = await readdir('./docs')
+const documents = await Promise.all(
+  files
+    .filter((f) => f.endsWith('.md'))
+    .map(async (file) => {
+      const content = await readFile(`./docs/${file}`, 'utf-8')
+      return new DocumentNode(file, content, { category: 'docs' })
+    })
+)
+
+// Process them all together
+const graph = await transform(graph(documents))
+  .pipe(chunk(new RecursiveCharacterSplitter()))
+  .pipe(embed(openai.embedding('text-embedding-3-small')))
+  .pipe(relationship())
+  .apply()
+```
+
+## Customizing Generation
+
+### Control Sample Distribution
+
+Specify exactly how many samples of each type:
+
+```typescript
+const samples = await synthesize({
+  graph,
+  synthesizers: [
+    [createSynthesizer(llm, 'single-hop-specific'), 60], // 60% simple
+    [createSynthesizer(llm, 'multi-hop-abstract'), 30], // 30% complex abstract
+    [createSynthesizer(llm, 'multi-hop-specific'), 10], // 10% complex specific
+  ],
+  personas,
+  count: 10
+})
+```
+
+### Skip Ground Truth Generation
+
+For faster generation when you only need questions:
+
+```typescript
+const samples = await synthesize({
+  graph,
+  synthesizers,
+  personas,
+  count: 10,
+  config: { generateGroundTruth: false } // Only generate queries
+})
+```
+
+## Using with Evaluation
+
+Once generated, use your test samples with the core evaluation package:
+
+```typescript
+import { evaluate } from '@open-evals/core'
+import { Faithfulness } from '@open-evals/metrics'
+
+const metric = new Faithfulness({ model: openai('gpt-4o-mini') })
+const results = await evaluate(testSamples, [metric])
+
+console.log('Average faithfulness:', results.statistics.averages.faithfulness)
+```
+
+## Saving and Loading
+
+Persist your knowledge graph for reuse:
+
+```typescript
+import { writeFile, readFile } from 'fs/promises'
+
+// Save knowledge graph
+await writeFile('knowledge-graph.json', JSON.stringify(graph.toJSON()))
+
+// Load later
+import { KnowledgeGraph } from '@open-evals/generator'
+const saved = JSON.parse(await readFile('knowledge-graph.json', 'utf-8'))
+const loadedGraph = KnowledgeGraph.fromJSON(saved)
+```
+
+Save generated samples:
+
+```typescript
+// Save as JSONL for easy loading
+await writeFile('test-samples.jsonl', testSamples.toJSONL())
+```

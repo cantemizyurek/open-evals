@@ -1,0 +1,102 @@
+---
+title: Personas
+description: Generate diverse test personas from your knowledge graph
+---
+
+## Overview
+
+Personas represent different types of users and ensure your test data covers diverse perspectives. Generate personas automatically from your knowledge graph to create realistic test scenarios.
+
+## Generating Personas
+
+Generate personas automatically from your knowledge graph:
+
+```typescript
+import { generatePersonas } from '@open-evals/generator'
+
+const personas = await generatePersonas(knowledgeGraph, openai.chat('gpt-4o'), {
+  numPersonas: 5, // Number to generate
+  concurrency: 3, // Parallel LLM calls
+})
+```
+
+The LLM analyzes your knowledge graph and creates personas with varying:
+
+**Expertise Levels** - From beginners asking basic questions to experts seeking advanced details
+
+**Use Cases** - Learning, building applications, troubleshooting, documenting
+
+**Communication Styles** - Formal technical queries, casual questions, specific requirements
+
+Example personas generated:
+
+```typescript
+;[
+  {
+    name: 'Junior Developer',
+    description:
+      'New to TypeScript, learning basic syntax and type system features...',
+  },
+  {
+    name: 'Senior Architect',
+    description:
+      'Experienced developer evaluating TypeScript for large-scale applications...',
+  },
+  {
+    name: 'Technical Writer',
+    description:
+      'Creating documentation and tutorials, needs clear explanations...',
+  },
+]
+```
+
+Each generated test sample is associated with a persona, ensuring questions reflect realistic user scenarios.
+
+## Custom Personas
+
+Define custom personas for specific test scenarios:
+
+```typescript
+import { persona } from '@open-evals/generator'
+
+const customPersonas = [
+  persona({
+    name: 'Security Auditor',
+    description: 'Focused on security implications and best practices...',
+  }),
+  persona({
+    name: 'Performance Engineer',
+    description: 'Concerned with runtime performance and optimization...',
+  }),
+]
+
+const samples = await synthesize({
+  graph,
+  synthesizers,
+  personas: customPersonas, // Use custom personas
+  count: 100,
+})
+```
+
+## Mixing Generated and Manual Personas
+
+Combine automatically generated personas with custom ones:
+
+```typescript
+const generatedPersonas = await generatePersonas(graph, llm, {
+  numPersonas: 3,
+})
+
+const allPersonas = [
+  ...generatedPersonas,
+  { name: 'Compliance Officer', description: '...' },
+  { name: 'DevOps Engineer', description: '...' },
+]
+
+const samples = await synthesize({
+  graph,
+  synthesizers,
+  personas: allPersonas,
+  count: 100,
+})
+```

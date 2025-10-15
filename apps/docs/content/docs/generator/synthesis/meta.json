@@ -1,0 +1,11 @@
+{
+  "title": "Test Synthesis",
+  "description": "Generate realistic test samples from knowledge graphs",
+  "pages": [
+    "personas",
+    "single-hop-specific",
+    "multi-hop-abstract",
+    "multi-hop-specific",
+    "configuration"
+  ]
+}

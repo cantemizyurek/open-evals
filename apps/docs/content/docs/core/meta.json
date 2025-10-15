@@ -2,5 +2,6 @@
   "title": "Core",
   "description": "The core library",
   "root": true,
-  "icon": "Brain"
+  "icon": "Brain",
+  "pages": ["index", "quickstart", "dataset", "evaluate", "custom-metrics"]
 }

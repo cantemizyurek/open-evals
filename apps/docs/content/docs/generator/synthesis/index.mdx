@@ -1,0 +1,68 @@
+---
+title: Test Synthesis
+description: Generate realistic test samples from knowledge graphs
+---
+
+## Overview
+
+Test synthesis is the process of automatically generating realistic test samples from your knowledge graph. The synthesizer combines your structured knowledge with diverse personas to create comprehensive test suites that cover different query types, complexity levels, and user perspectives.
+
+Each generated sample includes a question, reference answer, relevant contexts, and metadata about how it was created.
+
+## Quick Start
+
+The `synthesize` function orchestrates the entire generation process:
+
+```typescript
+import {
+  synthesize,
+  createSynthesizer,
+  generatePersonas,
+} from '@open-evals/generator'
+import { openai } from '@ai-sdk/openai'
+
+const testDataset = await synthesize({
+  graph: knowledgeGraph, // Your domain knowledge
+  synthesizers: [
+    // What to generate
+    [createSynthesizer(llm, 'single-hop-specific'), 1],
+  ],
+  personas, // Who asks the questions
+  count: 10, // Number of samples
+})
+```
+
+Each sample is a complete test case ready for evaluation:
+
+```typescript
+{
+  query: "What are TypeScript's primitive types?",
+  reference: "TypeScript has several primitive types: string, number, boolean...",
+  retrievedContexts: [
+    "TypeScript provides several primitive types including...",
+    "The basic types in TypeScript are..."
+  ],
+  metadata: {
+    persona: "Junior Developer",
+    queryType: "specific",
+    queryLength: "medium",
+    queryStyle: "conversational"
+  }
+}
+```
+
+## Key Concepts
+
+### Personas
+
+[Personas](/docs/generator/synthesis/personas) represent different types of users asking questions. They ensure your test data covers diverse perspectives, from beginners to experts, across different use cases and communication styles.
+
+### Query Types
+
+Different synthesizers generate different types of questions. The term "hop" refers to retrieving from a distinct node (chunk) in your knowledge graph:
+
+- **[Single-Hop Specific](/docs/generator/synthesis/single-hop-specific)** - Questions answerable from **one context chunk**. Great for testing basic retrieval and factual accuracy.
+
+- **[Multi-Hop Abstract](/docs/generator/synthesis/multi-hop-abstract)** - Conceptual questions requiring information from **2-3+ different chunks** to answer. Each "hop" retrieves from a different part of your knowledge graph. Tests retrieval breadth, information synthesis, and understanding of relationships between concepts.
+
+- **[Multi-Hop Specific](/docs/generator/synthesis/multi-hop-specific)** - Questions with specific requirements, where each requirement needs information from **different chunks**. The most challenging type because missing even one chunk makes the answer incomplete. Tests comprehensive retrieval and precise detail extraction.

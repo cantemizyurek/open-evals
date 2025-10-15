@@ -1,0 +1,104 @@
+---
+title: Configuration
+description: Configure synthesis options for optimal test generation
+---
+
+## Overview
+
+The `synthesize` function provides several configuration options to control sample generation, balance quality against speed, and customize the output for your needs.
+
+## Sample Distribution
+
+Control the mix of query types by specifying what are the weights for each synthesizer:
+
+```typescript
+const samples = await synthesize({
+  graph,
+  synthesizers: [
+    [createSynthesizer(llm, 'single-hop-specific'), 60], // 60% simple
+    [createSynthesizer(llm, 'multi-hop-abstract'), 30], // 30% abstract
+    [createSynthesizer(llm, 'multi-hop-specific'), 10], // 10% complex
+  ],
+  personas,
+  count: 100,
+})
+```
+
+This generates 100 total samples with the specified distribution. The percentages doesn't have to sum to 100. The numbers represent weights.
+
+## Ground Truth Generation
+
+Ground truth (reference answers) are essential for many metrics but take additional LLM calls to generate:
+
+```typescript
+// With ground truth (default)
+await synthesize({
+  graph,
+  synthesizers,
+  personas,
+  count: 100,
+  config: { generateGroundTruth: true }, // Each sample includes reference answer
+})
+
+// Without ground truth (faster)
+await synthesize({
+  graph,
+  synthesizers,
+  personas,
+  count: 100,
+  config: { generateGroundTruth: false }, // Only generates questions
+})
+```
+
+**When to Generate Ground Truth:**
+
+✅ **Generate when:**
+
+- You need reference answers for metrics like FactualCorrectness
+- Creating a benchmark dataset for ongoing evaluation
+- You want to verify question quality before using in tests
+
+❌ **Skip when:**
+
+- Only testing retrieval (questions are sufficient)
+- Iterating quickly during development
+- Budget or time constraints are critical
+
+**Cost Impact:**
+
+Ground truth generation approximately doubles the number of LLM calls:
+
+- **Without ground truth:** 1 call per sample (just the question)
+- **With ground truth:** 2 calls per sample (question + answer)
+
+## Concurrency Control
+
+Balance speed against API rate limits and costs:
+
+```typescript
+await synthesize({
+  graph,
+  synthesizers,
+  personas,
+  count: 100,
+  config: { concurrency: 3 },
+})
+```
+
+## Sample Metadata
+
+Each generated sample includes metadata for filtering and analysis:
+
+```typescript
+{
+  query: "...",
+  reference: "...",
+  retrievedContexts: [...],
+  metadata: {
+    persona: "Junior Developer",      // Which persona asked
+    queryType: "specific",            // Type of question (specific/abstract)
+    queryLength: "medium",            // Length (short/medium/long)
+    queryStyle: "conversational"      // Style (web-search/conversational/technical)
+  }
+}
+```
