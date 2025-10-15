@@ -1,4 +1,4 @@
-import { pLimit, type SingleTurnSample } from '@ai-sdk-eval/core'
+import { EvaluationDataset, pLimit } from '@open-evals/core'
 import type { KnowledgeGraph } from '../graph/knowledge-graph'
 import type { Persona } from '../persona/type'
 import { generateScenarios } from '../scenario/scenario-builder'
@@ -10,6 +10,14 @@ const DEFAULT_CONFIG: Required<SynthesizerConfig> = {
   generateGroundTruth: true,
 }
 
+export interface SynthesizeOptions<T extends object = {}> {
+  graph: KnowledgeGraph<T>
+  synthesizers: [Synthesizer<T>, number][]
+  personas: Persona[]
+  count: number
+  config?: SynthesizerConfig
+}
+
 /**
  * Generate synthetic test data from a knowledge graph
  *
@@ -18,11 +26,12 @@ const DEFAULT_CONFIG: Required<SynthesizerConfig> = {
  * 2. Distributes scenarios across different synthesizers
  * 3. Generates questions, contexts, and ground truth answers
  *
- * @param graph - The knowledge graph to generate test data from
- * @param synthesizers - Array of [synthesizer, weight] tuples. Weights determine the distribution of samples
- * @param personas - The personas to generate test data for
- * @param numSamples - The number of test samples to generate
- * @param config - Configuration options
+ * @param options - The synthesis options
+ * @param options.graph - The knowledge graph to generate test data from
+ * @param options.synthesizers - Array of [synthesizer, weight] tuples. Weights determine the distribution of samples
+ * @param options.personas - The personas to generate test data for
+ * @param options.count - The number of test samples to generate
+ * @param options.config - Configuration options
  * @returns Array of generated test samples
  *
  * @example
@@ -32,21 +41,18 @@ const DEFAULT_CONFIG: Required<SynthesizerConfig> = {
  *   [createSynthesizer(model, 'multi-hop-abstract'), 20],   // 20% weight
  *   [createSynthesizer(model, 'multi-hop-specific'), 20],   // 20% weight
  * ]
- * const testSamples = await synthesize(
+ * const testSamples = await synthesize({
  *   graph,
  *   synthesizers,
  *   personas,
- *   100
- * )
+ *   count: 100
+ * })
  * ```
  */
 export async function synthesize<T extends object = {}>(
-  graph: KnowledgeGraph<T>,
-  synthesizers: [Synthesizer<T>, number][],
-  personas: Persona[],
-  numSamples: number,
-  config?: SynthesizerConfig
-): Promise<SingleTurnSample[]> {
+  options: SynthesizeOptions<T>
+): Promise<EvaluationDataset> {
+  const { graph, synthesizers, personas, count, config } = options
   const finalConfig = { ...DEFAULT_CONFIG, ...config }
 
   if (synthesizers.length === 0) {
@@ -64,14 +70,14 @@ export async function synthesize<T extends object = {}>(
 
   const samplesPerSynthesizer = synthesizers.map(([synthesizer, weight]) => ({
     synthesizer,
-    count: Math.round((numSamples * weight) / totalWeight),
+    count: Math.round((count * weight) / totalWeight),
   }))
 
   const totalCalculated = samplesPerSynthesizer.reduce(
-    (sum, { count }) => sum + count,
+    (sum, { count: sampleCount }) => sum + sampleCount,
     0
   )
-  const difference = numSamples - totalCalculated
+  const difference = count - totalCalculated
   if (difference !== 0) {
     const largestIndex = samplesPerSynthesizer.reduce(
       (maxIdx, curr, idx, arr) =>
@@ -130,5 +136,5 @@ export async function synthesize<T extends object = {}>(
     finalConfig.concurrency
   )
 
-  return testSamples
+  return new EvaluationDataset(testSamples)
 }
