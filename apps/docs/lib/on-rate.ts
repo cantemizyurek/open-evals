@@ -107,8 +107,9 @@ async function getFeedbackDestination() {
   return cachedFeedbackDestination
 }
 
+let cachedOctokit: Octokit | undefined
 async function getOctokit(): Promise<Octokit> {
-  if (getOctokit.instance) return getOctokit.instance
+  if (cachedOctokit) return cachedOctokit
 
   const appId = process.env.GITHUB_APP_ID
   const privateKey = process.env.GITHUB_APP_PRIVATE_KEY
@@ -133,11 +134,7 @@ async function getOctokit(): Promise<Octokit> {
     }
   )
 
-  getOctokit.instance = await app.getInstallationOctokit(data.id)
+  cachedOctokit = await app.getInstallationOctokit(data.id)
 
-  return getOctokit.instance
-}
-
-namespace getOctokit {
-  export let instance: Octokit | undefined
+  return cachedOctokit
 }
