@@ -11,6 +11,7 @@ import type { Metadata } from 'next'
 import { createRelativeLink } from 'fumadocs-ui/mdx'
 import { Feedback } from '@/components/feedback'
 import { LLMCopyButton, ViewOptions } from '@/components/page-actions'
+import { onRateAction } from '@/lib/on-rate'
 
 export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
   const params = await props.params
@@ -44,17 +45,7 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
           })}
         />
       </DocsBody>
-      <Feedback
-        onRateAction={async (url, feedback) => {
-          'use server'
-
-          console.log(url, feedback)
-
-          return {
-            githubUrl: 'https://github.com/open-evals/open-evals',
-          }
-        }}
-      />
+      <Feedback onRateAction={onRateAction} />
     </DocsPage>
   )
 }
