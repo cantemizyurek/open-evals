@@ -5,10 +5,7 @@ import { Metric } from './metric'
 import { SingleTurnSample, MetricScore } from './types'
 
 class MockMetric extends Metric {
-  constructor(
-    name: string,
-    private scoreValue: number = 0.8
-  ) {
+  constructor(name: string, private scoreValue: number = 0.8) {
     super({ name })
   }
 
@@ -38,7 +35,10 @@ describe('evaluate', () => {
       { query: 'Question 3', response: 'Answer 3' },
     ]
     dataset = new EvaluationDataset(samples)
-    metrics = [new MockMetric('accuracy', 0.8), new MockMetric('relevance', 0.9)]
+    metrics = [
+      new MockMetric('accuracy', 0.8),
+      new MockMetric('relevance', 0.9),
+    ]
   })
 
   describe('basic evaluation', () => {
@@ -48,6 +48,37 @@ describe('evaluate', () => {
       expect(result.dataset).toBe(dataset)
       expect(result.statistics.totalSamples).toBe(3)
       expect(result.statistics.totalMetrics).toBe(2)
+      expect(result.statistics.averages.accuracy).toBeCloseTo(0.8)
+      expect(result.statistics.averages.relevance).toBeCloseTo(0.9)
+    })
+
+    it('should provide type-safe averages derived from metrics', async () => {
+      class AccuracyMetric extends Metric<'accuracy'> {
+        constructor() {
+          super({ name: 'accuracy' })
+        }
+        async evaluateSingleTurn(
+          sample: SingleTurnSample
+        ): Promise<MetricScore> {
+          return { name: this.name, score: 0.8 }
+        }
+      }
+
+      class RelevanceMetric extends Metric<'relevance'> {
+        constructor() {
+          super({ name: 'relevance' })
+        }
+        async evaluateSingleTurn(
+          sample: SingleTurnSample
+        ): Promise<MetricScore> {
+          return { name: this.name, score: 0.9 }
+        }
+      }
+
+      const typeSafeMetrics = [new AccuracyMetric(), new RelevanceMetric()]
+
+      const result = await evaluate(dataset, typeSafeMetrics)
+
       expect(result.statistics.averages.accuracy).toBeCloseTo(0.8)
       expect(result.statistics.averages.relevance).toBeCloseTo(0.9)
     })
@@ -115,7 +146,10 @@ describe('evaluateSample', () => {
 
   beforeEach(() => {
     sample = { query: 'Test question', response: 'Test answer' }
-    metrics = [new MockMetric('accuracy', 0.8), new MockMetric('relevance', 0.9)]
+    metrics = [
+      new MockMetric('accuracy', 0.8),
+      new MockMetric('relevance', 0.9),
+    ]
   })
 
   describe('basic sample evaluation', () => {
@@ -175,7 +209,9 @@ describe('evaluateSample', () => {
 
     it('should convert non-Error reasons to Error', async () => {
       class WeirdMetric extends Metric {
-        async evaluateSingleTurn(sample: SingleTurnSample): Promise<MetricScore> {
+        async evaluateSingleTurn(
+          sample: SingleTurnSample
+        ): Promise<MetricScore> {
           throw 'String error'
         }
       }
@@ -199,7 +235,9 @@ describe('evaluateSample', () => {
           super({ name })
         }
 
-        async evaluateSingleTurn(sample: SingleTurnSample): Promise<MetricScore> {
+        async evaluateSingleTurn(
+          sample: SingleTurnSample
+        ): Promise<MetricScore> {
           startTimes.push(Date.now())
           await new Promise((resolve) => setTimeout(resolve, 10))
           endTimes.push(Date.now())

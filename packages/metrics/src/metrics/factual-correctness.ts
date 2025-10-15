@@ -73,7 +73,7 @@ export interface FactualCorrectnessOptions {
  *
  * Score ranges from 0 to 1, where 1 means perfect factual correctness.
  */
-export class FactualCorrectness extends LLMMetric {
+export class FactualCorrectness extends LLMMetric<'factual_correctness'> {
   private model: LanguageModel
   private mode: 'precision' | 'recall' | 'f1'
   private beta: number
