@@ -9,6 +9,6 @@ export interface GeneratePersonasOptions {
    * If not provided, generates one persona per representative cluster.
    * If provided and exceeds available clusters, samples with replacement.
    */
-  numPersonas?: number
+  count?: number
   concurrency?: number
 }

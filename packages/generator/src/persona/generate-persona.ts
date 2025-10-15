@@ -84,7 +84,7 @@ export async function generatePersonas<
   model: LanguageModel,
   options?: GeneratePersonasOptions
 ): Promise<Persona[]> {
-  const { numPersonas, concurrency = 5 } = options || {}
+  const { count, concurrency = 5 } = options || {}
 
   const nodesWithEmbeddings = kg.getNodes().filter(
     (
@@ -115,9 +115,9 @@ export async function generatePersonas<
     throw new Error('No representative summaries found for persona generation.')
   }
 
-  const selectedRepresentatives = numPersonas
+  const selectedRepresentatives = count
     ? Array.from(
-        { length: numPersonas },
+        { length: count },
         (_, i) => representatives[i % representatives.length]
       )
     : representatives
