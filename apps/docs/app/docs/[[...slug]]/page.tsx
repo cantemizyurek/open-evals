@@ -33,7 +33,7 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
         <LLMCopyButton markdownUrl={`${page.url}.mdx`} />
         <ViewOptions
           markdownUrl={`${page.url}.mdx`}
-          githubUrl={`https://github.com/cantemizyurek/open-evals/blob/dev/apps/docs/content/docs/${page.path}`}
+          githubUrl={`https://github.com/cantemizyurek/open-evals/blob/main/apps/docs/content/docs/${page.path}`}
         />
       </div>
       <DocsBody>
