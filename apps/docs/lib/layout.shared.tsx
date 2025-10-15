@@ -25,13 +25,6 @@ export function baseOptions(): BaseLayoutProps {
       ),
     },
     // see https://fumadocs.dev/docs/ui/navigation/links
-    links: [
-      {
-        text: 'Docs',
-        url: '/docs/core',
-        icon: 'Book',
-      },
-    ],
     githubUrl: 'https://github.com/cantemizyurek/open-evals',
   }
 }

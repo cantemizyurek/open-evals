@@ -1,3 +1,5 @@
+import { cn } from '@/lib/cn'
+import { buttonVariants } from 'fumadocs-ui/components/ui/button'
 import Link from 'next/link'
 
 export default function HomePage() {
@@ -21,7 +23,12 @@ export default function HomePage() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
           <Link
             href="/docs/core"
-            className="inline-flex h-12 items-center justify-center rounded-lg bg-foreground px-8 text-sm font-medium text-background hover:opacity-90 transition-opacity"
+            className={cn(
+              buttonVariants({
+                variant: 'primary',
+              }),
+              'h-12 px-8'
+            )}
           >
             Get Started
           </Link>
@@ -29,7 +36,12 @@ export default function HomePage() {
             href="https://github.com/cantemizyurek/open-evals"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex h-12 items-center justify-center rounded-lg border border-border px-8 text-sm font-medium hover:bg-accent transition-colors"
+            className={cn(
+              buttonVariants({
+                variant: 'outline',
+              }),
+              'h-12 px-8'
+            )}
           >
             View on GitHub
           </Link>
