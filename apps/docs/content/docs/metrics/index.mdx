@@ -30,7 +30,8 @@ This makes traditional development practices insufficient for LLM applications.
 
 ### From Vibes to Metrics
 
-Most teams start with **"vibe checking"** - manually reviewing a few outputs and saying "looks good" based on gut feeling. This doesn't scale:
+Most teams start with **"vibe checking"** - manually reviewing a few outputs and saying "looks good" based on gut feeling.
+This is a good starting point, but it doesn't scale:
 
 - **Inconsistent** - Different people have different standards
 - **Slow** - Manual review becomes a bottleneck
@@ -81,13 +82,13 @@ import { openai } from '@ai-sdk/openai'
 
 // For RAG applications - check if responses are grounded in context
 const faithfulness = new Faithfulness({
-  model: openai('gpt-4o-mini')
+  model: openai('gpt-4o-mini'),
 })
 
 // For Q&A systems - check accuracy against reference answers
 const factualCorrectness = new FactualCorrectness({
   model: openai('gpt-4o-mini'),
-  mode: 'f1'
+  mode: 'f1',
 })
 ```
 
@@ -97,9 +98,9 @@ Pass your query, response, and context to the metric:
 
 ```typescript
 const result = await faithfulness.evaluateSingleTurn({
-  query: "What is the capital of France?",
-  response: "Paris is the capital of France.",
-  retrievedContexts: ["Paris is the capital city of France."]
+  query: 'What is the capital of France?',
+  response: 'Paris is the capital of France.',
+  retrievedContexts: ['Paris is the capital city of France.'],
 })
 
 console.log(`Score: ${result.score}`) // 0.0 - 1.0
@@ -134,9 +135,9 @@ Fine-tune metrics for your specific needs:
 ```typescript
 const metric = new FactualCorrectness({
   model: openai('gpt-4o'),
-  mode: 'precision',     // or 'recall', 'f1'
-  atomicity: 'high',     // Granularity of claim decomposition
-  coverage: 'high'       // Thoroughness of evaluation
+  mode: 'precision', // or 'recall', 'f1'
+  atomicity: 'high', // Granularity of claim decomposition
+  coverage: 'high', // Thoroughness of evaluation
 })
 ```
 
@@ -150,6 +151,7 @@ Metrics implement proven evaluation methodologies:
 ### Transparent Scoring
 
 Every evaluation includes:
+
 - **Numeric score** - Quantitative measure (0.0 to 1.0)
 - **Reasoning** - Natural language explanation
 - **Metadata** - Detailed breakdown of the evaluation process
