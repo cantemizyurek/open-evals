@@ -1,6 +1,6 @@
 {
   "name": "@open-evals/metrics",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Metrics for Open Evals",
   "author": {
     "name": "Can Temizyurek",
@@ -35,7 +35,7 @@
     "publish": "pnpm build && pnpm publish"
   },
   "dependencies": {
-    "@open-evals/core": "^0.0.0",
+    "@open-evals/core": "workspace:*",
     "ai": "^5.0.60",
     "zod": "^4.1.12"
   },

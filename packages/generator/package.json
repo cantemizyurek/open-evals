@@ -1,6 +1,6 @@
 {
   "name": "@open-evals/generator",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "",
   "type": "module",
   "files": [
@@ -18,15 +18,13 @@
     "dev": "tsdown --watch"
   },
   "devDependencies": {
-    "@ai-sdk/openai": "^2.0.44",
     "@types/node": "^24.7.0",
-    "ai": "^5.0.60",
-    "dotenv": "^17.2.3",
     "tsdown": "latest"
   },
   "dependencies": {
     "@open-evals/core": "workspace:*",
     "@open-evals/rag": "workspace:*",
+    "ai": "^5.0.60",
     "zod": "^4.1.12"
   }
 }
