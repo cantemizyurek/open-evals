@@ -122,8 +122,8 @@ importers:
   packages/metrics:
     dependencies:
       '@open-evals/core':
-        specifier: workspace:*
-        version: link:../core
+        specifier: ^0.0.0
+        version: 0.0.0(zod@4.1.12)
       ai:
         specifier: ^5.0.60
         version: 5.0.60(zod@4.1.12)
@@ -931,6 +931,9 @@ packages:
   '@octokit/webhooks@14.1.3':
     resolution: {integrity: sha512-gcK4FNaROM9NjA0mvyfXl0KPusk7a1BeA8ITlYEZVQCXF5gcETTd4yhAU0Kjzd8mXwYHppzJBWgdBVpIR9wUcQ==}
     engines: {node: '>= 20'}
+
+  '@open-evals/core@0.0.0':
+    resolution: {integrity: sha512-fWFn7HRw/p7alAleLXuU5/AzeunVfr/84cuh1GrpwBQKWAKkOVLlkz/hEj1DpeZUkjlqvvlN30B56gDWvkQDMA==}
 
   '@opentelemetry/api@1.9.0':
     resolution: {integrity: sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg==}
@@ -4836,6 +4839,12 @@ snapshots:
       '@octokit/openapi-webhooks-types': 12.0.3
       '@octokit/request-error': 7.0.1
       '@octokit/webhooks-methods': 6.0.0
+
+  '@open-evals/core@0.0.0(zod@4.1.12)':
+    dependencies:
+      ai: 5.0.60(zod@4.1.12)
+    transitivePeerDependencies:
+      - zod
 
   '@opentelemetry/api@1.9.0': {}
 
