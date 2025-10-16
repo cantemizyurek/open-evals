@@ -1,7 +1,20 @@
 {
   "name": "@open-evals/rag",
   "version": "0.0.0",
-  "description": "",
+  "description": "RAG utilities for Open Evals",
+  "author": {
+    "name": "Can Temizyurek",
+    "email": "cantemizyurek@gmail.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cantemizyurek/open-evals"
+  },
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "files": [
     "dist"
@@ -15,7 +28,11 @@
   },
   "scripts": {
     "build": "tsdown",
-    "dev": "tsdown --watch"
+    "dev": "tsdown --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "publish": "pnpm build && pnpm publish"
   },
   "devDependencies": {
     "tsdown": "latest"
