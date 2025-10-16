@@ -24,20 +24,20 @@ console.log(results.statistics.averages) // { faithfulness: 0.92 }
 ## Function Signature
 
 ```typescript
-function evaluate(
+function evaluate<T extends readonly Metric[]>(
   dataset: EvaluationDataset,
-  metrics: Metric[],
+  metrics: T,
   config?: {
     concurrency?: number // Default: 10
     throwOnError?: boolean // Default: false
     metadata?: Record<string, unknown>
   }
-): Promise<EvaluationResult>
+): Promise<EvaluationResult<T>>
 ```
 
 ### Parameters
 
-import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { TypeTable } from 'fumadocs-ui/components/type-table'
 
 <TypeTable
   type={{
@@ -52,7 +52,8 @@ import { TypeTable } from 'fumadocs-ui/components/type-table';
       required: true,
     },
     config: {
-      description: 'Optional configuration for parallel execution and error handling',
+      description:
+        'Optional configuration for parallel execution and error handling',
       type: 'object',
     },
     'config.concurrency': {
@@ -227,15 +228,15 @@ console.log('Model B improved on:', improved)
 ### evaluate()
 
 ```typescript
-function evaluate(
+function evaluate<T extends readonly Metric[]>(
   dataset: EvaluationDataset,
-  metrics: Metric[],
+  metrics: T,
   config?: {
     concurrency?: number
     throwOnError?: boolean
     metadata?: Record<string, unknown>
   }
-): Promise<EvaluationResult>
+): Promise<EvaluationResult<T>>
 ```
 
 Evaluates all samples in a dataset with the provided metrics.
