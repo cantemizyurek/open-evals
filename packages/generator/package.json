@@ -28,7 +28,8 @@
   },
   "scripts": {
     "build": "tsdown",
-    "dev": "tsdown --watch"
+    "dev": "tsdown --watch",
+    "prepublishOnly": "pnpm build"
   },
   "devDependencies": {
     "@types/node": "^24.7.0",
