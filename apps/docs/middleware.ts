@@ -9,5 +9,8 @@ export function middleware(request: NextRequest) {
       return NextResponse.rewrite(new URL(result, request.nextUrl))
     }
   }
+  if (request.nextUrl.pathname === '/docs') {
+    return NextResponse.redirect(new URL('/docs/core', request.nextUrl))
+  }
   return NextResponse.next()
 }
