@@ -1,8 +1,7 @@
 {
   "name": "@open-evals/core",
   "version": "0.0.0",
-  "private": true,
-  "description": "",
+  "description": "Core package for Open Evals",
   "type": "module",
   "files": [
     "dist"
