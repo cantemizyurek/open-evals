@@ -2,6 +2,16 @@
   "name": "@open-evals/core",
   "version": "0.0.0",
   "description": "Core package for Open Evals",
+  "access": "public",
+  "author": {
+    "name": "Can Temizyurek",
+    "email": "cantemizyurek@gmail.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cantemizyurek/open-evals"
+  },
   "type": "module",
   "files": [
     "dist"
