@@ -5,7 +5,8 @@ export interface RecursiveCharacterSplitterOptions {
   chunkSize?: number
   chunkOverlap?: number
   separators?: string[]
-  keepSeparator?: boolean
+  keepSeparator?: boolean | 'start' | 'end'
+  isSeparatorRegex?: boolean
   lengthFunction?: LengthFunction
 }
 
@@ -23,7 +24,8 @@ export class RecursiveCharacterSplitter extends BaseSplitter {
   private readonly chunkSize: number
   private readonly chunkOverlap: number
   private readonly separators: string[]
-  private readonly keepSeparator: boolean
+  private readonly keepSeparator: boolean | 'start' | 'end'
+  private readonly isSeparatorRegex: boolean
 
   constructor(options: RecursiveCharacterSplitterOptions = {}) {
     super({ lengthFunction: options.lengthFunction })
@@ -31,6 +33,7 @@ export class RecursiveCharacterSplitter extends BaseSplitter {
     this.chunkOverlap = options.chunkOverlap ?? 200
     this.separators = options.separators ?? ['\n\n', '\n', ' ', '']
     this.keepSeparator = options.keepSeparator ?? true
+    this.isSeparatorRegex = options.isSeparatorRegex ?? false
     this.validateOptions()
   }
 
@@ -115,7 +118,19 @@ export class RecursiveCharacterSplitter extends BaseSplitter {
   ): SeparatorResult {
     for (let i = 0; i < separators.length; i++) {
       const separator = separators[i]
-      if (separator === '' || text.includes(separator)) {
+
+      if (separator === '') {
+        return {
+          separator,
+          remainingSeparators: separators.slice(i + 1),
+        }
+      }
+
+      const exists = this.isSeparatorRegex
+        ? new RegExp(separator).test(text)
+        : text.includes(separator)
+
+      if (exists) {
         return {
           separator,
           remainingSeparators: separators.slice(i + 1),
@@ -137,13 +152,50 @@ export class RecursiveCharacterSplitter extends BaseSplitter {
   }
 
   private splitWithSeparator(text: string, separator: string): string[] {
-    const parts = text.split(separator)
-    const splits = parts.map((part, i) => {
-      const isLastPart = i === parts.length - 1
-      return this.keepSeparator && !isLastPart ? part + separator : part
-    })
+    if (!separator) {
+      return text.split('').filter((s) => s !== '')
+    }
 
-    return splits.filter((s) => s !== '')
+    const sepPattern = this.isSeparatorRegex
+      ? separator
+      : separator.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+    if (!this.keepSeparator) {
+      return text.split(new RegExp(sepPattern)).filter((s) => s !== '')
+    }
+
+    if (!text) {
+      return []
+    }
+
+    const splits = text.split(new RegExp(`(${sepPattern})`))
+    const result: string[] = []
+
+    if (this.keepSeparator === 'end' || this.keepSeparator === true) {
+      for (let i = 0; i < splits.length - 1; i += 2) {
+        if (i + 1 < splits.length) {
+          const chunk = splits[i] + (splits[i + 1] || '')
+          if (chunk) result.push(chunk)
+        }
+      }
+      if (splits.length % 2 === 1 && splits[splits.length - 1]) {
+        result.push(splits[splits.length - 1])
+      }
+    } else if (this.keepSeparator === 'start') {
+      if (splits[0]) result.push(splits[0])
+
+      for (let i = 1; i < splits.length - 1; i += 2) {
+        const separator = splits[i]
+        const text = splits[i + 1]
+        if (separator && text) {
+          result.push(separator + text)
+        } else if (separator) {
+          result.push(separator)
+        }
+      }
+    }
+
+    return result.filter((s) => s !== '')
   }
 
   private processSplits(
@@ -179,7 +231,9 @@ export class RecursiveCharacterSplitter extends BaseSplitter {
   ): void {
     if (goodSplits.length === 0) return
 
-    const mergedSeparator = this.keepSeparator ? '' : separator
+    const mergedSeparator = this.keepSeparator
+      ? ''
+      : (separator === '' ? '' : ' ')
     const merged = this.mergeSmallSplits(goodSplits, mergedSeparator)
     output.push(...merged)
     goodSplits.length = 0
