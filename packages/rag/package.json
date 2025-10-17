@@ -1,6 +1,6 @@
 {
   "name": "@open-evals/rag",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "RAG utilities for Open Evals",
   "author": {
     "name": "Can Temizyurek",
@@ -32,7 +32,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "prepublishOnly": "pnpm build"
+    "publish:package": "pnpm build && pnpm publish"
   },
   "devDependencies": {
     "@vitest/ui": "^3.2.4",
