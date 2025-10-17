@@ -12,7 +12,7 @@ export interface Chunk {
     end: number
     index: number
     documentId: string
-  }
+  } & Record<string, unknown>
 }
 
 export interface Splitter {
@@ -20,3 +20,9 @@ export interface Splitter {
 }
 
 export type LengthFunction = (text: string) => number
+
+export interface BaseChunkOptions {
+  chunkSize?: number
+  chunkOverlap?: number
+  lengthFunction?: LengthFunction
+}
