@@ -2,6 +2,9 @@
   "name": "ai-sdk-eval",
   "version": "0.0.0",
   "private": true,
+  "scripts": {
+    "build": "pnpm --filter=@open-evals/* build"
+  },
   "packageManager": "pnpm@10.8.1",
   "workspaces": [
     "packages/*",
