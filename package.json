@@ -8,6 +8,7 @@
   "packageManager": "pnpm@10.8.1",
   "workspaces": [
     "packages/*",
-    "apps/*"
+    "apps/*",
+    "agents/*"
   ]
 }
