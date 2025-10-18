@@ -222,6 +222,13 @@ function Message({
     }
   }
 
+  const searching = message.parts.some((part) => {
+    console.log(part)
+
+    if (part.type !== 'tool-search') return false
+    return part.state === 'input-streaming'
+  })
+
   return (
     <div {...props}>
       <p
@@ -232,6 +239,12 @@ function Message({
       >
         {roleName[message.role] ?? 'unknown'}
       </p>
+      {searching && (
+        <p className="mb-1 text-sm flex items-center gap-1 font-medium text-fd-muted-foreground">
+          <Loader2 className="size-4 animate-spin text-fd-muted-foreground" />
+          Searching...
+        </p>
+      )}
       <div className="prose text-sm">
         <Markdown text={markdown} />
       </div>
