@@ -30,7 +30,7 @@ export class RecursiveCharacterSplitter extends BaseSplitter {
   constructor(options: RecursiveCharacterSplitterOptions = {}) {
     super({ lengthFunction: options.lengthFunction })
     this.chunkSize = options.chunkSize ?? 1000
-    this.chunkOverlap = options.chunkOverlap ?? 200
+    this.chunkOverlap = options.chunkOverlap ?? 0
     this.separators = options.separators ?? ['\n\n', '\n', ' ', '']
     this.keepSeparator = options.keepSeparator ?? true
     this.isSeparatorRegex = options.isSeparatorRegex ?? false
@@ -233,7 +233,9 @@ export class RecursiveCharacterSplitter extends BaseSplitter {
 
     const mergedSeparator = this.keepSeparator
       ? ''
-      : (separator === '' ? '' : ' ')
+      : separator === ''
+      ? ''
+      : ' '
     const merged = this.mergeSmallSplits(goodSplits, mergedSeparator)
     output.push(...merged)
     goodSplits.length = 0
