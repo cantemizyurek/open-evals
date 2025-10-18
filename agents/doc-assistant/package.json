@@ -1,0 +1,30 @@
+{
+  "name": "@open-evals/doc-assistant",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "pnpm@10.8.1",
+  "type": "module",
+  "scripts": {
+    "seed": "tsx src/seed-database.ts",
+    "test": "tsx src/test.ts"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^2.0.52",
+    "@open-evals/rag": "workspace:*",
+    "@upstash/vector": "^1.2.2",
+    "ai": "^5.0.60",
+    "cohere-ai": "^7.19.0",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@open-evals/core": "workspace:*",
+    "@open-evals/generator": "workspace:*",
+    "@open-evals/metrics": "workspace:*",
+    "@types/node": "^24.8.1",
+    "dotenv": "^17.2.3",
+    "tsx": "^4.19.2"
+  }
+}
