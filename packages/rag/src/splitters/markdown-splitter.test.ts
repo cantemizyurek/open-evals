@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { MarkdownTransformer } from './markdown-splitter'
+import { MarkdownSplitter } from './markdown-splitter'
 import type { Document, Chunk } from '../types'
 
-describe('MarkdownTransformer', () => {
+describe('MarkdownSplitter', () => {
   let document: Document
 
   beforeEach(() => {
@@ -15,16 +15,16 @@ describe('MarkdownTransformer', () => {
 
   describe('constructor', () => {
     it('should create instance with default options', () => {
-      const splitter = new MarkdownTransformer()
-      expect(splitter).toBeInstanceOf(MarkdownTransformer)
+      const splitter = new MarkdownSplitter()
+      expect(splitter).toBeInstanceOf(MarkdownSplitter)
     })
 
     it('should accept custom chunk options', () => {
-      const splitter = new MarkdownTransformer({
+      const splitter = new MarkdownSplitter({
         chunkSize: 500,
         chunkOverlap: 50,
       })
-      expect(splitter).toBeInstanceOf(MarkdownTransformer)
+      expect(splitter).toBeInstanceOf(MarkdownSplitter)
     })
   })
 
@@ -42,7 +42,7 @@ Content for section 2 goes here.
 ### Subsection 2.1
 More detailed content in subsection.`
 
-      const splitter = new MarkdownTransformer({
+      const splitter = new MarkdownSplitter({
         chunkSize: 100,
         chunkOverlap: 20,
       })
@@ -75,7 +75,7 @@ Content under H5
 ###### H6 Heading
 Content under H6`
 
-      const splitter = new MarkdownTransformer({
+      const splitter = new MarkdownSplitter({
         chunkSize: 50,
         chunkOverlap: 10,
       })
@@ -111,7 +111,7 @@ def hello():
 
 Final paragraph.`
 
-      const splitter = new MarkdownTransformer({
+      const splitter = new MarkdownSplitter({
         chunkSize: 100,
         chunkOverlap: 20,
       })
@@ -136,7 +136,7 @@ The \`process.env.NODE_ENV\` variable controls the environment.
 
 Call \`function()\` to execute.`
 
-      const splitter = new MarkdownTransformer({
+      const splitter = new MarkdownSplitter({
         chunkSize: 80,
         chunkOverlap: 10,
       })
@@ -164,7 +164,7 @@ More content here.
 Section 3
 Final content.`
 
-      const splitter = new MarkdownTransformer({
+      const splitter = new MarkdownSplitter({
         chunkSize: 50,
         chunkOverlap: 0,
       })
@@ -192,7 +192,7 @@ ___
 Part 3
 Content`
 
-      const splitter = new MarkdownTransformer({
+      const splitter = new MarkdownSplitter({
         chunkSize: 30,
         chunkOverlap: 0,
       })
@@ -217,7 +217,7 @@ Third paragraph is shorter.
 
 Fourth and final paragraph.`
 
-      const splitter = new MarkdownTransformer({
+      const splitter = new MarkdownSplitter({
         chunkSize: 100,
         chunkOverlap: 20,
       })
@@ -239,7 +239,7 @@ Line 3
 Line 4
 Line 5`
 
-      const splitter = new MarkdownTransformer({
+      const splitter = new MarkdownSplitter({
         chunkSize: 20,
         chunkOverlap: 5,
       })
@@ -320,7 +320,7 @@ Please read CONTRIBUTING.md for details.
 
 MIT License - see LICENSE file for details.`
 
-      const splitter = new MarkdownTransformer({
+      const splitter = new MarkdownSplitter({
         chunkSize: 200,
         chunkOverlap: 50,
       })
@@ -367,7 +367,7 @@ MIT License - see LICENSE file for details.`
    - Another sub bullet
 2. Second numbered item`
 
-      const splitter = new MarkdownTransformer({
+      const splitter = new MarkdownSplitter({
         chunkSize: 80,
         chunkOverlap: 20,
       })
@@ -391,7 +391,7 @@ MIT License - see LICENSE file for details.`
 
 More content after table.`
 
-      const splitter = new MarkdownTransformer({
+      const splitter = new MarkdownSplitter({
         chunkSize: 100,
         chunkOverlap: 20,
       })
@@ -408,7 +408,7 @@ More content after table.`
   describe('edge cases', () => {
     it('should handle empty document', async () => {
       document.content = ''
-      const splitter = new MarkdownTransformer()
+      const splitter = new MarkdownSplitter()
 
       const chunks = await collectChunks(splitter.split(document))
 
@@ -417,7 +417,7 @@ More content after table.`
 
     it('should handle document with only whitespace', async () => {
       document.content = '   \n\n   \n   '
-      const splitter = new MarkdownTransformer({
+      const splitter = new MarkdownSplitter({
         chunkSize: 10,
         chunkOverlap: 0,
       })
@@ -432,7 +432,7 @@ More content after table.`
 
 Small content here.`
 
-      const splitter = new MarkdownTransformer({
+      const splitter = new MarkdownSplitter({
         chunkSize: 5,
         chunkOverlap: 0,
       })
@@ -454,7 +454,7 @@ Sometimes there are paragraph breaks like this.
 But no actual markdown structure beyond basic paragraphs.
 The splitter should still handle this gracefully.`
 
-      const splitter = new MarkdownTransformer({
+      const splitter = new MarkdownSplitter({
         chunkSize: 100,
         chunkOverlap: 20,
       })
@@ -472,7 +472,7 @@ The splitter should still handle this gracefully.`
 
 Content here.`
 
-      const splitter = new MarkdownTransformer({
+      const splitter = new MarkdownSplitter({
         chunkSize: 50,
         chunkOverlap: 0,
       })
@@ -499,7 +499,7 @@ Text with \`inline code\` and [links](http://example.com).
 
 ![Image alt text](image.png)`
 
-      const splitter = new MarkdownTransformer({
+      const splitter = new MarkdownSplitter({
         chunkSize: 80,
         chunkOverlap: 10,
       })
@@ -530,7 +530,7 @@ Second paragraph content.
 
 Third paragraph content.`
 
-      const splitter = new MarkdownTransformer({
+      const splitter = new MarkdownSplitter({
         chunkSize: 40,
         chunkOverlap: 10,
       })
@@ -560,7 +560,7 @@ Word word word.`
         return text.split(/\s+/).filter(Boolean).length
       }
 
-      const splitter = new MarkdownTransformer({
+      const splitter = new MarkdownSplitter({
         chunkSize: 5,
         chunkOverlap: 2,
         lengthFunction: wordCounter,

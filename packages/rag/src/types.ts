@@ -12,7 +12,7 @@ export interface Chunk {
     end: number
     index: number
     documentId: string
-  } & Record<string, unknown>
+  }
 }
 
 export interface Splitter {

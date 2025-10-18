@@ -130,7 +130,10 @@ export async function generatePersonas<
           model,
           schema: PersonaSchema,
           prompt: `
-Using the provided summary, generate a single persona who would likely interact with or benefit from the content.
+Using the provided summary, generate a single persona who would likely interact with or benefit from the content with the given expertise level.
+
+Expertise level: 
+${expertiseLevel()}
 
 Summary:
 ${summary}
@@ -139,7 +142,7 @@ Generate a persona with:
 - A role or job title (e.g., "Senior Software Engineer", "Product Manager", "Data Scientist") - do NOT include a human name
 - A concise description of who they are, their background, knowledge level and goals
 
-Provide a realistic and specific persona based on this content.
+Provide a realistic and specific persona based on this content with the given expertise level.
 `.trim(),
         })
 
@@ -159,4 +162,12 @@ Provide a realistic and specific persona based on this content.
   }
 
   return personas
+}
+
+function expertiseLevel(): 'beginner' | 'intermediate' | 'expert' {
+  return Math.random() < 0.33
+    ? 'beginner'
+    : Math.random() < 0.66
+    ? 'intermediate'
+    : 'expert'
 }

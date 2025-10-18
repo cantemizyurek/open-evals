@@ -1,7 +1,7 @@
 import type { BaseChunkOptions } from '../types'
 import { RecursiveCharacterSplitter } from './recursive-character'
 
-export class MarkdownTransformer extends RecursiveCharacterSplitter {
+export class MarkdownSplitter extends RecursiveCharacterSplitter {
   private static readonly MARKDOWN_SEPARATORS = [
     // Headers
     '\n#{1,6} ',
@@ -24,7 +24,7 @@ export class MarkdownTransformer extends RecursiveCharacterSplitter {
   constructor(options: BaseChunkOptions = {}) {
     super({
       ...options,
-      separators: MarkdownTransformer.MARKDOWN_SEPARATORS,
+      separators: MarkdownSplitter.MARKDOWN_SEPARATORS,
       isSeparatorRegex: true,
     })
   }
