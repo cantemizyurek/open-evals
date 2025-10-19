@@ -1,3 +1,4 @@
+import { EmbeddingModel, LanguageModel } from 'ai'
 import {
   EvaluationSample,
   MetricScore,
@@ -65,12 +66,40 @@ export abstract class Metric<Name extends string = string> {
   }
 }
 
+export interface LLMMetricConfig<Name extends string = string>
+  extends MetricConfig<Name> {
+  model: LanguageModel
+}
+
 /**
  * Base class for metrics that use LLMs for evaluation
  */
-export abstract class LLMMetric<Name extends string = string> extends Metric<Name> {}
+export abstract class LLMMetric<
+  Name extends string = string
+> extends Metric<Name> {
+  readonly model: LanguageModel
+
+  constructor(config: LLMMetricConfig<Name>) {
+    super(config)
+    this.model = config.model
+  }
+}
+
+export interface EmbeddingMetricConfig<Name extends string = string>
+  extends MetricConfig<Name> {
+  model: EmbeddingModel
+}
 
 /**
  * Base class for metrics that use embeddings for evaluation
  */
-export abstract class EmbeddingMetric<Name extends string = string> extends Metric<Name> {}
+export abstract class EmbeddingMetric<
+  Name extends string = string
+> extends Metric<Name> {
+  readonly model: EmbeddingModel
+
+  constructor(config: EmbeddingMetricConfig<Name>) {
+    super(config)
+    this.model = config.model
+  }
+}

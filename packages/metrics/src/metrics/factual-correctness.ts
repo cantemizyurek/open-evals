@@ -74,7 +74,6 @@ export interface FactualCorrectnessOptions {
  * Score ranges from 0 to 1, where 1 means perfect factual correctness.
  */
 export class FactualCorrectness extends LLMMetric<'factual_correctness'> {
-  private model: LanguageModel
   private mode: 'precision' | 'recall' | 'f1'
   private beta: number
   private atomicity: 'low' | 'high'
@@ -86,8 +85,8 @@ export class FactualCorrectness extends LLMMetric<'factual_correctness'> {
       name: 'factual_correctness',
       description:
         'Evaluates the factual correctness of responses against reference answers',
+      model: options.model,
     })
-    this.model = options.model
     this.mode = options.mode ?? 'f1'
     this.beta = options.beta ?? 1.0
     this.atomicity = options.atomicity ?? 'low'

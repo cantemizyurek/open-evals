@@ -58,15 +58,13 @@ export interface FaithfulnessOptions {
  * Score ranges from 0 to 1, where 1 means all statements are faithful to the context.
  */
 export class Faithfulness extends LLMMetric<'faithfulness'> {
-  private model: LanguageModel
-
   constructor(options: FaithfulnessOptions) {
     super({
       name: 'faithfulness',
       description:
         "Evaluates the faithfulness of the model's response to the retrieved contexts",
+      model: options.model,
     })
-    this.model = options.model
   }
 
   /**
