@@ -7,4 +7,7 @@ export type { FactualCorrectnessOptions } from './metrics/factual-correctness'
 export { AnswerSimilarity } from './metrics/answer-similarity'
 export type { AnswerSimilarityOptions } from './metrics/answer-similarity'
 
+export { ContextRecall } from './metrics/context-recall'
+export type { ContextRecallOptions } from './metrics/context-recall'
+
 export { fbetaScore } from './utils'
