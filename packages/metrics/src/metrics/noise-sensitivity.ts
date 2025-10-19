@@ -342,17 +342,41 @@ ${statements.map((s, i) => `${i + 1}. "${s}"`).join('\n')}`,
         answerStatements.statements
       )
 
+      const expectedGtLength = groundTruthStatements.statements.length
+      const expectedAnsLength = answerStatements.statements.length
+
+      for (let i = 0; i < gtVerdictsList.length; i++) {
+        const actualLength = gtVerdictsList[i].statements.length
+        if (actualLength !== expectedGtLength) {
+          throw new Error(
+            `LLM returned ${actualLength} verdicts for ground truth statements against context ${i}, expected ${expectedGtLength}. This indicates an issue with the evaluation model's response.`
+          )
+        }
+      }
+
+      for (let i = 0; i < ansVerdictsList.length; i++) {
+        const actualLength = ansVerdictsList[i].statements.length
+        if (actualLength !== expectedAnsLength) {
+          throw new Error(
+            `LLM returned ${actualLength} verdicts for answer statements against context ${i}, expected ${expectedAnsLength}. This indicates an issue with the evaluation model's response.`
+          )
+        }
+      }
+
+      if (groundTruth2AnswerVerdicts.statements.length !== expectedAnsLength) {
+        throw new Error(
+          `LLM returned ${groundTruth2AnswerVerdicts.statements.length} verdicts for answer statements against reference, expected ${expectedAnsLength}. This indicates an issue with the evaluation model's response.`
+        )
+      }
+
       const retrieved2GroundTruth = gtVerdictsList.map((verdicts) =>
         verdicts.statements.map((v) => v.verdict === 1)
       )
 
       const retrieved2Answer = answerStatements.statements.map((_, stmtIdx) =>
-        ansVerdictsList.map((verdicts) => {
-          if (stmtIdx >= verdicts.statements.length) {
-            return false
-          }
-          return verdicts.statements[stmtIdx].verdict === 1
-        })
+        ansVerdictsList.map(
+          (verdicts) => verdicts.statements[stmtIdx].verdict === 1
+        )
       )
 
       const groundTruth2Answer = groundTruth2AnswerVerdicts.statements.map(
