@@ -83,7 +83,7 @@ export class AnswerSimilarity extends EmbeddingMetric<'answer_similarity'> {
   async evaluateSingleTurn(sample: SingleTurnSample): Promise<MetricScore> {
     if (!sample.reference) {
       throw new Error(
-        'SemanticSimilarity metric requires reference to be present'
+        'AnswerSimilarity metric requires reference to be present'
       )
     }
 
@@ -96,14 +96,14 @@ export class AnswerSimilarity extends EmbeddingMetric<'answer_similarity'> {
         name: this.name,
         score: roundedScore,
         reason: this.threshold
-          ? `Semantic similarity ${
+          ? `Answer similarity ${
               roundedScore >= this.threshold ? 'meets' : 'does not meet'
             } threshold of ${this.threshold}`
-          : `Semantic similarity score: ${roundedScore.toFixed(4)}`,
+          : `Answer similarity score: ${roundedScore.toFixed(4)}`,
       }
     } catch (error) {
       throw new Error(
-        `Failed to evaluate semantic similarity: ${
+        `Failed to evaluate answer similarity: ${
           error instanceof Error ? error.message : String(error)
         }`
       )
