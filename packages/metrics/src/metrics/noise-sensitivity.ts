@@ -217,12 +217,11 @@ ${statements.map((s, i) => `${i + 1}. "${s}"`).join('\n')}`,
     const relevantRetrieved = new Array(numContexts).fill(false)
 
     for (let ctxIdx = 0; ctxIdx < numContexts; ctxIdx++) {
-      for (
-        let stmtIdx = 0;
-        stmtIdx < retrieved2GroundTruth[ctxIdx].length;
-        stmtIdx++
-      ) {
-        if (retrieved2GroundTruth[ctxIdx][stmtIdx]) {
+      const contextVerdicts = retrieved2GroundTruth[ctxIdx]
+      if (!contextVerdicts) continue
+
+      for (let stmtIdx = 0; stmtIdx < contextVerdicts.length; stmtIdx++) {
+        if (contextVerdicts[stmtIdx]) {
           relevantRetrieved[ctxIdx] = true
           break
         }
@@ -230,7 +229,8 @@ ${statements.map((s, i) => `${i + 1}. "${s}"`).join('\n')}`,
     }
 
     const relevantFaithful = retrieved2Answer.map((answerVerdicts) => {
-      for (let ctxIdx = 0; ctxIdx < answerVerdicts.length; ctxIdx++) {
+      const maxIdx = Math.min(answerVerdicts.length, relevantRetrieved.length)
+      for (let ctxIdx = 0; ctxIdx < maxIdx; ctxIdx++) {
         if (relevantRetrieved[ctxIdx] && answerVerdicts[ctxIdx]) {
           return true
         }
@@ -240,7 +240,8 @@ ${statements.map((s, i) => `${i + 1}. "${s}"`).join('\n')}`,
 
     if (this.mode === 'irrelevant') {
       const irrelevantFaithful = retrieved2Answer.map((answerVerdicts) => {
-        for (let ctxIdx = 0; ctxIdx < answerVerdicts.length; ctxIdx++) {
+        const maxIdx = Math.min(answerVerdicts.length, relevantRetrieved.length)
+        for (let ctxIdx = 0; ctxIdx < maxIdx; ctxIdx++) {
           if (!relevantRetrieved[ctxIdx] && answerVerdicts[ctxIdx]) {
             return true
           }
@@ -248,19 +249,38 @@ ${statements.map((s, i) => `${i + 1}. "${s}"`).join('\n')}`,
         return false
       })
 
-      const exclusiveIrrelevantFaithful = irrelevantFaithful.map(
-        (irrel, idx) => irrel && !relevantFaithful[idx]
+      const minLength = Math.min(
+        irrelevantFaithful.length,
+        relevantFaithful.length
       )
+      const exclusiveIrrelevantFaithful = new Array(minLength)
+        .fill(false)
+        .map((_, idx) => irrelevantFaithful[idx] && !relevantFaithful[idx])
 
-      const count = exclusiveIrrelevantFaithful.filter(
-        (irrel, idx) => irrel && incorrect[idx]
-      ).length
+      const countLength = Math.min(
+        exclusiveIrrelevantFaithful.length,
+        incorrect.length
+      )
+      if (countLength === 0) return 0
+
+      let count = 0
+      for (let i = 0; i < countLength; i++) {
+        if (exclusiveIrrelevantFaithful[i] && incorrect[i]) {
+          count++
+        }
+      }
 
       return count / incorrect.length
     } else {
-      const count = relevantFaithful.filter(
-        (rel, idx) => rel && incorrect[idx]
-      ).length
+      const countLength = Math.min(relevantFaithful.length, incorrect.length)
+      if (countLength === 0) return 0
+
+      let count = 0
+      for (let i = 0; i < countLength; i++) {
+        if (relevantFaithful[i] && incorrect[i]) {
+          count++
+        }
+      }
 
       return count / incorrect.length
     }
@@ -327,9 +347,12 @@ ${statements.map((s, i) => `${i + 1}. "${s}"`).join('\n')}`,
       )
 
       const retrieved2Answer = answerStatements.statements.map((_, stmtIdx) =>
-        ansVerdictsList.map(
-          (verdicts) => verdicts.statements[stmtIdx].verdict === 1
-        )
+        ansVerdictsList.map((verdicts) => {
+          if (stmtIdx >= verdicts.statements.length) {
+            return false
+          }
+          return verdicts.statements[stmtIdx].verdict === 1
+        })
       )
 
       const groundTruth2Answer = groundTruth2AnswerVerdicts.statements.map(
