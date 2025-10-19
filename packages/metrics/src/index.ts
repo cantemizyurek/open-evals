@@ -10,4 +10,7 @@ export type { AnswerSimilarityOptions } from './metrics/answer-similarity'
 export { ContextRecall } from './metrics/context-recall'
 export type { ContextRecallOptions } from './metrics/context-recall'
 
+export { NoiseSensitivity } from './metrics/noise-sensitivity'
+export type { NoiseSensitivityOptions } from './metrics/noise-sensitivity'
+
 export { fbetaScore } from './utils'
