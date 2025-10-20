@@ -14,7 +14,9 @@ const ContextRecallClassificationSchema = z.object({
     .int()
     .min(0)
     .max(1)
-    .describe('Whether the statement can be attributed to the context (0 or 1)'),
+    .describe(
+      'Whether the statement can be attributed to the context (0 or 1)'
+    ),
 })
 
 /**
@@ -122,9 +124,7 @@ Answer: "${answer}"`,
   /**
    * Compute the context recall score
    */
-  private computeScore(
-    classifications: ContextRecallClassification[]
-  ): number {
+  private computeScore(classifications: ContextRecallClassification[]): number {
     if (classifications.length === 0) {
       return NaN
     }
@@ -145,23 +145,19 @@ Answer: "${answer}"`,
       )
     }
 
-    if (!sample.reference) {
-      throw new Error('ContextRecall metric requires reference to be present')
-    }
-
     try {
       const context = sample.retrievedContexts.join('\n')
       const classifications = await this.classifyStatements(
         sample.query,
         context,
-        sample.reference
+        sample.response
       )
 
       if (classifications.classifications.length === 0) {
         return {
           name: this.name,
           score: 0,
-          reason: 'No statements were found in the reference answer',
+          reason: 'No statements were found in the response',
         }
       }
 
@@ -185,7 +181,7 @@ Answer: "${answer}"`,
             .length
         } out of ${
           classifications.classifications.length
-        } statements from the reference answer were attributed to the retrieved contexts`,
+        } statements from the response were attributed to the retrieved contexts`,
         metadata: {
           classifications: classifications.classifications,
         },
