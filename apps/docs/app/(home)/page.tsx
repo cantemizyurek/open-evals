@@ -14,6 +14,10 @@ const documents = [new DocumentNode('typescript-guide.md', content, {})]
 
 const knowledgeGraph = await transform(graph(documents))
   .pipe(summarize(openai.chat('gpt-4.1')))
+  .pipe(embedProperty(openai.embedding('text-embedding-3-small'), {
+    embedProperty: 'summary',
+    propertyName: 'summaryEmbedding',
+  }))
   .pipe(chunk(new RecursiveCharacterSplitter()))
   .pipe(embed(openai.embedding('text-embedding-3-small')))
   .pipe(relationship())
