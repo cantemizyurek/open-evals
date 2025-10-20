@@ -22,7 +22,8 @@ import { docAssistant } from './agent'
 const FOLDER_PATH = new URL('../../../apps/docs/content/docs', import.meta.url)
   .pathname
 const documents = (await importFiles(FOLDER_PATH)).map(
-  (document) => new DocumentNode(document.id, document.content, {})
+  (document) =>
+    new DocumentNode(document.id, document.content, document.metadata)
 )
 
 const knowledgeGraph = await transform(graph(documents))
@@ -65,3 +66,10 @@ for await (const sample of testSamples) {
     sample.response = response.text
   }
 }
+
+const results = await evaluate(testSamples, [
+  new FactualCorrectness({ model: openai.chat('gpt-4.1') }),
+  new Faithfulness({ model: openai.chat('gpt-4.1') }),
+])
+
+console.log(results)

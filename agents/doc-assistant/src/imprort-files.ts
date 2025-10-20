@@ -1,7 +1,9 @@
 import { readdir, readFile, stat } from 'fs/promises'
 import { Document } from '@open-evals/rag'
 
-export async function importFiles(url: string): Promise<Document[]> {
+export async function importFiles(
+  url: string
+): Promise<Document<{ path: string }>[]> {
   const files = await readdir(url)
   const filesContent = await Promise.all(
     files.map(async (file) => {
@@ -16,12 +18,17 @@ export async function importFiles(url: string): Promise<Document[]> {
         return {
           id: file,
           content: fileContent,
-          metadata: {},
+          metadata: {
+            path: `${url}/${file}`,
+          },
         }
       }
     })
   )
   return filesContent
     .flat()
-    .filter((document): document is Document => document !== null)
+    .filter(
+      (document): document is Document<{ path: string }> =>
+        document !== null && 'path' in document.metadata
+    )
 }

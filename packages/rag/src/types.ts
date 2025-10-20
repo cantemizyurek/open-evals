@@ -1,7 +1,7 @@
-export interface Document {
+export interface Document<T extends object = {}> {
   id: string
   content: string
-  metadata: Record<string, unknown>
+  metadata: T
 }
 
 export interface Chunk {
