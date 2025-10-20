@@ -68,6 +68,73 @@ Use this format for conversations where context from previous messages matters. 
 }
 ```
 
+### Type Guards
+
+When working with datasets that contain both single-turn and multi-turn samples, use the provided type guard functions for type-safe handling:
+
+```typescript
+import { isSingleTurnSample, isMultiTurnSample } from '@open-evals/core'
+
+dataset.forEach((sample) => {
+  if (isSingleTurnSample(sample)) {
+    // TypeScript knows sample has query, response, etc.
+    console.log('Query:', sample.query)
+  } else if (isMultiTurnSample(sample)) {
+    // TypeScript knows sample has messages
+    console.log('Messages:', sample.messages.length)
+  }
+})
+```
+
+These helpers provide type narrowing, giving you full TypeScript autocomplete and type safety when processing samples.
+
+## Generating Responses
+
+When you have a dataset with queries but need to populate the responses, use the `generate()` method. This is a common workflow when testing your LLM application:
+
+```typescript
+import { EvaluationDataset, isSingleTurnSample } from '@open-evals/core'
+import { generateText } from 'ai'
+import { openai } from '@ai-sdk/openai'
+
+// 1. Start with queries and reference answers
+const dataset = new EvaluationDataset([
+  {
+    query: 'What is the capital of France?',
+    response: '', // Empty - will be filled by generate()
+    reference: 'The capital of France is Paris.',
+  },
+  {
+    query: 'Explain TypeScript',
+    response: '',
+    reference: 'TypeScript is a typed superset of JavaScript.',
+  },
+])
+
+// 2. Generate responses using your model
+const populatedDataset = await dataset.generate(
+  async (sample) => {
+    // Use type guard for type safety
+    if (isSingleTurnSample(sample)) {
+      const result = await generateText({
+        model: openai('gpt-4o-mini'),
+        prompt: sample.query,
+      })
+      return result.text
+    }
+    return ''
+  },
+  { concurrency: 10 } // Process 10 samples at a time
+)
+
+// 3. Evaluate the generated responses
+const results = await evaluate(populatedDataset, [
+  new Faithfulness({ model: openai('gpt-4o-mini') }),
+])
+```
+
+The `generate()` method handles parallel execution automatically, making it efficient for large datasets. Adjust the `concurrency` parameter based on your API rate limits.
+
 ## Configuration Options
 
 The evaluate function accepts configuration to control how evaluations run. These options help you balance speed, error handling, and tracking.
