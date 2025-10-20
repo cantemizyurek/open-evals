@@ -18,4 +18,4 @@ export type { MetricConfig } from './metric'
 
 export { evaluate } from './evaluate'
 
-export { pLimit, shuffle } from './utils'
+export { pLimit, shuffle, isSingleTurnSample, isMultiTurnSample } from './utils'

@@ -69,3 +69,7 @@ export interface EvaluationResult<T extends readonly Metric[] = Metric[]> {
     totalMetrics: number
   }
 }
+
+export type EvaluationGenerator = (
+  sample: EvaluationSample
+) => Promise<string> | string

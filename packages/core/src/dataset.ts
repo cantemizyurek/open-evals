@@ -1,10 +1,37 @@
-import { EvaluationSample } from './types'
+import { LanguageModel } from 'ai'
+import { EvaluationGenerator, EvaluationSample } from './types'
+import { pLimit } from './utils'
 
 export class EvaluationDataset {
   private samples: EvaluationSample[] = []
 
   constructor(samples: EvaluationSample[]) {
     this.samples = samples
+  }
+
+  /**
+   * Generate responses for the samples using the given generator
+   * @param generator - The generator to use for generating responses
+   * @param config - Optional configuration for the generation
+   * @returns A new EvaluationDataset with the generated responses
+   */
+  async generate(
+    generator: EvaluationGenerator,
+    config?: { concurrency?: number }
+  ): Promise<EvaluationDataset> {
+    const { concurrency = 10 } = config || {}
+    return new EvaluationDataset(
+      await pLimit(
+        this.samples,
+        async (sample) => {
+          return {
+            ...sample,
+            response: await generator(sample),
+          }
+        },
+        concurrency
+      )
+    )
   }
 
   get length(): number {

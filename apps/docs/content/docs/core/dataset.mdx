@@ -62,6 +62,59 @@ dataset.addMany([sample1, sample2, sample3])
 
 This pattern is particularly helpful when combining data from different sources like APIs, files, or generators.
 
+## Generating Responses
+
+The `generate()` method allows you to populate responses for all samples in your dataset using a generator function. This is particularly useful when you have a dataset of queries and need to generate responses before evaluation:
+
+```typescript
+import { EvaluationDataset, isSingleTurnSample } from '@open-evals/core'
+
+// Create a dataset with queries but no responses yet
+const dataset = new EvaluationDataset([
+  { query: 'What is TypeScript?', response: '' },
+  { query: 'Explain async/await', response: '' },
+])
+
+// Generate responses using your model
+const datasetWithResponses = await dataset.generate(
+  async (sample) => {
+    if (isSingleTurnSample(sample)) {
+      // Call your LLM or application
+      return await myModel.generate(sample.query)
+    }
+    return ''
+  },
+  { concurrency: 10 } // Process 10 samples at a time
+)
+```
+
+The generator function receives each sample and should return a string response. The method handles parallelization automatically using the specified concurrency level, making it efficient for large datasets.
+
+```typescript
+// Example with AI SDK
+import { generateText } from 'ai'
+import { openai } from '@ai-sdk/openai'
+
+const populated = await dataset.generate(
+  async (sample) => {
+    if (isSingleTurnSample(sample)) {
+      const result = await generateText({
+        model: openai('gpt-4o-mini'),
+        prompt: sample.query,
+      })
+      return result.text
+    }
+    return ''
+  },
+  { concurrency: 5 }
+)
+
+// Now ready for evaluation
+const results = await evaluate(populated, metrics)
+```
+
+**Performance tip:** Adjust concurrency based on your API rate limits. Higher values process faster but may hit rate limits, while lower values are more conservative but slower.
+
 ## Filtering and Mapping
 
 Transform your dataset using familiar functional programming patterns. Both methods return new datasets, preserving the original:
@@ -146,6 +199,13 @@ const loaded2 = EvaluationDataset.fromJSON(
 
 - `add(sample)` - Add a single sample
 - `addMany(samples)` - Add multiple samples
+
+### Generation Methods
+
+- `generate(generator, config?)` - Generate responses for all samples
+  - `generator: (sample: EvaluationSample) => Promise<string> | string` - Function to generate response for each sample
+  - `config.concurrency?: number` - Number of samples to process in parallel (default: 10)
+  - Returns a new `EvaluationDataset` with generated responses
 
 ### Transformation Methods
 
