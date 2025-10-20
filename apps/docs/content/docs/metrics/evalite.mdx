@@ -1,0 +1,112 @@
+---
+title: Evalite Integration
+description: Use metrics with the Evalite evaluation framework
+---
+
+## Overview
+
+Use `toEvaliteScorer` to integrate any metric from `@open-evals/metrics` with [Evalite](https://evalite.dev), combining production-ready metrics with Evalite's experiment tracking and web UI.
+
+## Installation
+
+```npm
+npm i @open-evals/metrics evalite
+```
+
+## Basic Usage
+
+Convert any metric to an Evalite scorer using `toEvaliteScorer`:
+
+```typescript
+import { evalite } from 'evalite'
+import { Faithfulness, toEvaliteScorer } from '@open-evals/metrics'
+import { openai } from '@ai-sdk/openai'
+
+evalite('RAG Evaluation', {
+  data: async () => [
+    {
+      input: {
+        query: 'What is TypeScript?',
+        retrievedContexts: ['TypeScript adds static typing to JavaScript.'],
+      },
+    },
+  ],
+  task: async (sample) => {
+    // Your LLM task implementation
+    return 'TypeScript is a typed superset of JavaScript.'
+  },
+  scorers: [
+    toEvaliteScorer(
+      new Faithfulness({
+        model: openai('gpt-4.1-mini'),
+      })
+    ),
+  ],
+})
+```
+
+## How It Works
+
+The adapter maps Evalite's `input` and `output` to the metric's expected format:
+
+```typescript
+// Evalite provides: { input, output }
+// Adapter transforms to: { ...input, response: output }
+const result = await metric.evaluate({ ...input, response: output })
+```
+
+All metric metadata (score, reasoning, detailed breakdowns) is preserved in Evalite's result format.
+
+## Multiple Metrics Example
+
+```typescript
+import { evalite } from 'evalite'
+import { generateText } from 'ai'
+import { openai } from '@ai-sdk/openai'
+import {
+  Faithfulness,
+  AnswerSimilarity,
+  ContextRecall,
+  toEvaliteScorer,
+} from '@open-evals/metrics'
+
+evalite('RAG Evaluation', {
+  data: async () => [
+    {
+      input: {
+        query: 'What is TypeScript?',
+        retrievedContexts: ['TypeScript adds static typing to JavaScript.'],
+        reference: 'TypeScript is a typed superset of JavaScript.',
+      },
+    },
+  ],
+
+  task: async (sample) => {
+    const result = await generateText({
+      model: openai('gpt-4.1'),
+      prompt: sample.query,
+    })
+    return result.text
+  },
+
+  scorers: [
+    toEvaliteScorer(new Faithfulness({ model: openai('gpt-4.1-mini') })),
+    toEvaliteScorer(
+      new AnswerSimilarity({ model: openai('text-embedding-3-small') })
+    ),
+    toEvaliteScorer(new ContextRecall({ model: openai('gpt-4.1-mini') })),
+  ],
+})
+```
+
+## Sample Format
+
+Input samples follow the `SingleTurnSample` format:
+
+```typescript
+{
+  query: string              // Required
+  retrievedContexts?: string[] // For Faithfulness, ContextRecall, NoiseSensitivity
+  reference?: string         // For FactualCorrectness, AnswerSimilarity, ContextRecall
+}
+```

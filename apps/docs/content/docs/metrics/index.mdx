@@ -170,6 +170,26 @@ const dataset = new EvaluationDataset([
 const results = await evaluate(dataset, [faithfulness, factualCorrectness])
 ```
 
+### Integration with Evalite
+
+All metrics can be used with the [Evalite](https://evalite.dev) evaluation framework using `toEvaliteScorer`. This allows you to leverage Evalite's experiment tracking, comparison tools, and web UI while using the production-ready metrics from this package.
+
+```typescript
+import { evalite } from 'evalite'
+import { Faithfulness, toEvaliteScorer } from '@open-evals/metrics'
+import { openai } from '@ai-sdk/openai'
+
+evalite('My Evaluation', {
+  data: async () => [{ input: { query: '...', retrievedContexts: ['...'] } }],
+  task: async (sample) => 'Your LLM response',
+  scorers: [
+    toEvaliteScorer(new Faithfulness({ model: openai('gpt-4.1-mini') })),
+  ],
+})
+```
+
+See the [Evalite Integration](/docs/metrics/evalite) guide for complete documentation.
+
 ## Architecture
 
 Metrics in this package extend the base `LLMMetric` class from `@ai-sdk-eval/core`, which provides:

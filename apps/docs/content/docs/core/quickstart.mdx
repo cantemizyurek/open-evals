@@ -135,6 +135,44 @@ const results = await evaluate(populatedDataset, [
 
 The `generate()` method handles parallel execution automatically, making it efficient for large datasets. Adjust the `concurrency` parameter based on your API rate limits.
 
+## Using with Evalite
+
+You can also use metrics with the [Evalite](https://evalite.dev) by converting them with `toEvaliteScorer`:
+
+```typescript
+import { evalite } from 'evalite'
+import { Faithfulness, toEvaliteScorer } from '@open-evals/metrics'
+import { openai } from '@ai-sdk/openai'
+
+evalite('Documentation Q&A Evaluation', {
+  data: async () => [
+    {
+      input: {
+        query: 'What is TypeScript?',
+        retrievedContexts: ['TypeScript adds static typing to JavaScript.'],
+      },
+    },
+  ],
+  task: async (sample) => {
+    // Your LLM task that generates responses
+    const result = await generateText({
+      model: openai('gpt-4o-mini'),
+      prompt: sample.query,
+    })
+    return result.text
+  },
+  scorers: [
+    toEvaliteScorer(
+      new Faithfulness({
+        model: openai('gpt-4.1-mini'),
+      })
+    ),
+  ],
+})
+```
+
+The `toEvaliteScorer` function adapts metrics from `@open-evals/metrics` to work seamlessly with Evalite, preserving all scoring metadata.
+
 ## Configuration Options
 
 The evaluate function accepts configuration to control how evaluations run. These options help you balance speed, error handling, and tracking.
