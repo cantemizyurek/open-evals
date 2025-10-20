@@ -14,3 +14,4 @@ export { NoiseSensitivity } from './metrics/noise-sensitivity'
 export type { NoiseSensitivityOptions } from './metrics/noise-sensitivity'
 
 export { fbetaScore } from './utils'
+export { toEvaliteScorer } from './evalite'

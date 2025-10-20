@@ -37,7 +37,8 @@
   "dependencies": {
     "@open-evals/core": "workspace:*",
     "ai": "^5.0.60",
-    "zod": "^4.1.12"
+    "zod": "^4.1.12",
+    "evalite": "^0.16.1"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^2.0.0",
