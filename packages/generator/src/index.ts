@@ -43,3 +43,11 @@ export {
   createSynthesizer,
 } from './synthesizer/implementations'
 export { BaseSynthesizer } from './synthesizer/base-synthesizer'
+
+// Test Data Source Integration
+export {
+  createSDGSource,
+  createQuickSDGSource,
+  createDiverseSDGSource,
+  type SDGSourceConfig,
+} from './test-data-source'
