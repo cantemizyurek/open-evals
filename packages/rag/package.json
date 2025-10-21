@@ -1,6 +1,6 @@
 {
   "name": "@open-evals/rag",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "RAG utilities for Open Evals",
   "author": {
     "name": "Can Temizyurek",
